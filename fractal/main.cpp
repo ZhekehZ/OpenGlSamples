@@ -129,7 +129,7 @@ int main(int, char **) {
         static float radius = (1.0f + sqrt(1.0f + 4.0f * sqrt(c[0] * c[0] + c[1] * c[1]))) / 2.0f;
 
         // GUI
-        ImGui::Begin("Triangle Position/Color");
+        ImGui::Begin("Settings");
         ImGui::SliderFloat2("Centre", c, -1, 1);
         ImGui::SliderInt("Iterations", &n, 1, 800);
         ImGui::SliderFloat("Radius", &radius, 0, 10);
