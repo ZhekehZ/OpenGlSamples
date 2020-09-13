@@ -13,21 +13,18 @@ uniform float u_zoom;
 
 in vec2 v_out;
 
-vec2 c_mult(vec2 a, vec2 b) {
-  return vec2(
-    a.x * b.x - a.y * b.y,
-    a.y * b.x + a.x * b.y
-  );
+vec2 complex_sqr(vec2 a) {
+    return vec2(a.x * a.x - a.y * a.y, a.y * a.x + a.x * a.y);
 }
 
 void main() {
     vec2 z = (v_out.xy + u_shift1) * u_zoom + u_shift2;
 
     float color = 0;
-    for (int i = 0; i <= u_n && length(z) < u_radius; ++i) {
-        z = c_mult(z, z) + u_c;
-        color += 1.0 / u_n;
+    int i = 0;
+    for (; i <= u_n && length(z) < u_radius; ++i) {
+        z = complex_sqr(z) + u_c;
     }
 
-    o_frag_color = texture1D(u_texture, color);
+    o_frag_color = texture1D(u_texture, float(i) / u_n);
 }
