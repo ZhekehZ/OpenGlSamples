@@ -10,6 +10,7 @@
 3. run `[Release/]fractal[.exe]`
 
 #### Screenshots
-![Example1](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example1.png)
-![Example2](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example2.png)
-![Example3](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example3.png)
+![Example1](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example_upd7.png)
+![Example1](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example_upd4.png)
+![Example1](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example_upd5.png)
+![Example1](https://raw.githubusercontent.com/ZhekehZ/OpenGlSamples/master/fractal/screenshots/example_upd6.png)
