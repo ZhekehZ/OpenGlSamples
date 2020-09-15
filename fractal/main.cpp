@@ -32,7 +32,12 @@ float V[] = {
 
 unsigned int F[] = {0, 1, 2, 2, 3, 0 };
 
-float T[] = {1, 1, 1, 0, 0, 0};
+float T[] = {   0/255.0f,   0/255.0f,   0/255.0f,
+              255/255.0f,  24/255.0f,  24/255.0f,
+              255/255.0f, 248/255.0f,   0/255.0f,
+                0/255.0f,   9/255.0f,  80/255.0f
+            };
+const unsigned NT = sizeof(T) / (3 * sizeof(float));
 
 void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
    glGenVertexArrays(1, &vao);
@@ -56,7 +61,7 @@ void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
    glBindTexture(GL_TEXTURE_1D, tex);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-   glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 2, 0, GL_RGB, GL_FLOAT, T);
+   glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, NT, 0, GL_RGB, GL_FLOAT, T);
    glBindTexture(GL_TEXTURE_1D, 0);
 
 }
@@ -130,12 +135,29 @@ int main(int, char **) {
 
         // GUI
         ImGui::Begin("Settings");
-        ImGui::SliderFloat2("Centre", c, -1, 1);
+        ImGui::Text("Fractal settings");
+        ImGui::SliderFloat("centre.x", c, -1, 1);
+        ImGui::SliderFloat("centre.y", c + 1, -1, 1);
+
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Text("Quality settings");
+
         ImGui::SliderInt("Iterations", &n, 1, 800);
         ImGui::SliderFloat("Radius", &radius, 0, 10);
 
-        ImGui::ColorEdit3("Color 1", &T[0]);
-        ImGui::ColorEdit3("Color 2", &T[3]);
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Text("Color settings");
+
+        ImGui::Columns(NT, nullptr, false);
+        for (int i = 0; i < NT; ++i) {
+            auto name = std::to_string(i);
+            ImGui::ColorEdit3(name.c_str(), T + (3 * i), 1 << 5 | 1 << 7);
+            ImGui::NextColumn();
+        }
+        ImGui::Columns(1);
+
         ImGui::End();
 
         int width, height;
@@ -147,7 +169,7 @@ int main(int, char **) {
 
             float x = mouse.x / static_cast<float>(width) * 2 - 1;
             float y = -(mouse.y / static_cast<float>(height) * 2 - 1);
-            wheel = wheel > 0 ? 1/1.2 : 1.2;
+            wheel = wheel > 0 ? 1/1.2f : 1.2f;
 
             shift2[0] += (x + shift1[0]) * (1 - wheel) * zoom;
             shift2[1] += (y + shift1[1]) * (1 - wheel) * zoom;
@@ -170,8 +192,10 @@ int main(int, char **) {
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_1D, tex);
-        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 2, 0, GL_RGB, GL_FLOAT, T);
+        glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, NT, 0, GL_RGB, GL_FLOAT, T);
         shader.set_uniform("u_texture", 0);
+        shader.set_uniform("scale", static_cast<float>(width)/height, 1.0f);
+
         shader.set_uniform("u_shift1", shift1[0], shift1[1]);
         shader.set_uniform("u_shift2", shift2[0], shift2[1]);
 
