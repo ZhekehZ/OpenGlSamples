@@ -27,5 +27,5 @@ void main() {
         z = complex_sqr(z) + u_c;
     }
 
-    o_frag_color = texture1D(u_texture, float(i) / u_n);
+    o_frag_color = texture(u_texture, float(i) / u_n);
 }
