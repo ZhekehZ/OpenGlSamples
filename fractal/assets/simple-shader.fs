@@ -20,7 +20,7 @@ vec2 complex_sqr(vec2 a) {
 }
 
 void main() {
-    vec2 z = (v_out.xy * scale + u_shift1) * u_zoom + u_shift2;
+    vec2 z = ((v_out.xy + u_shift1) * u_zoom + u_shift2) * scale;
     
     int i = 0;
     for (; i <= u_n && length(z) < u_radius; ++i) {

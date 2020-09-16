@@ -79,7 +79,7 @@ int main(int, char **) {
     //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 
     // Create window with graphics context
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Fractal", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1200, 800, "Fractal", NULL, NULL);
     if (window == NULL) return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
@@ -162,6 +162,7 @@ int main(int, char **) {
 
         int width, height;
         glfwGetWindowSize(window, &width, &height); // since ImGui::GetWindowHeight() returns width
+	float screen_ratio = static_cast<float>(width) / height;
 
         float wheel = ImGui::GetIO().MouseWheel;
         if (abs(wheel) > 0.1) {
@@ -170,8 +171,10 @@ int main(int, char **) {
             float x = mouse.x / static_cast<float>(width) * 2 - 1;
             float y = -(mouse.y / static_cast<float>(height) * 2 - 1);
             wheel = wheel > 0 ? 1/1.2f : 1.2f;
+           
+            mouse.x /= screen_ratio;
 
-            shift2[0] += (x + shift1[0]) * (1 - wheel) * zoom;
+	    shift2[0] += (x + shift1[0]) * (1 - wheel) * zoom;
             shift2[1] += (y + shift1[1]) * (1 - wheel) * zoom;
 
             zoom *= wheel;
