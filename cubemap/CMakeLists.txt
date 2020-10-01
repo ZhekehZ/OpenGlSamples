@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(opengl-imgui-sample CXX)
+project(cubemap CXX)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
@@ -10,30 +10,27 @@ find_package(glfw CONFIG)
 find_package(glew CONFIG)
 find_package(fmt CONFIG)
 find_package(glm CONFIG)
+find_package(stb CONFIG)
 find_package(tinyobjloader CONFIG)
 
-add_executable( cubemap
-                main.cpp
-                opengl_shader.cpp
-                opengl_shader.h
-                bindings/imgui_impl_glfw.cpp
-                bindings/imgui_impl_opengl3.cpp
-                bindings/imgui_impl_glfw.h
-                bindings/imgui_impl_opengl3.h
-                assets/simple-shader.vs
-                assets/simple-shader.fs)
+set(CMAKE_CXX_STANDARD 17)
+
+file(GLOB SOURCES
+        src/*.cpp src/*.h
+        src/buffer_utils/*.h
+        src/shader_utils/*.cpp src/shader_utils/*.h
+        assets/shaders/*.vs assets/shaders/*.fs
+        bindings/*.cpp bindings/*.hpp)
+
+add_executable(cubemap ${SOURCES})
 
 add_custom_command(TARGET cubemap
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.vs ${PROJECT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.fs ${PROJECT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets ${PROJECT_BINARY_DIR}/assets
 )
 
 target_compile_definitions(cubemap PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 target_link_libraries(cubemap
                         tinyobjloader::tinyobjloader
-                        imgui::imgui
-                        GLEW::glew_s
-                        glfw::glfw
-                        fmt::fmt
-                        glm::glm)
+                        imgui::imgui GLEW::glew_s
+                        glfw::glfw fmt::fmt glm::glm stb::stb)
