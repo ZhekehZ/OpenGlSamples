@@ -69,7 +69,7 @@ int main(int, char **) {
     int selected_skybox = 0;
     int selected_object = 0;
 
-    bool pre_test = false;
+    bool pre_pass = false;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -132,7 +132,7 @@ int main(int, char **) {
         ImGui::Combo("Object", &selected_object, combobox_options_object.c_str());
         ImGui::Combo("Skybox", &selected_skybox, combobox_options_skybox.c_str());
         ImGui::Spacing();
-        ImGui::Checkbox("Enable pre-z-test", &pre_test);
+        ImGui::Checkbox("Enable pre-z-pass", &pre_pass);
         ImGui::End();
 
         // Render object
@@ -149,7 +149,7 @@ int main(int, char **) {
         objectShader.set_uniform("u_color_intensity", color_intensity);
         objectShader.set_uniform("u_refraction_value", refraction_value);
 
-        objects[selected_object].draw(objectShader, pre_test);
+        objects[selected_object].draw(objectShader, pre_pass);
 
         // Render skybox
         glActiveTexture(GL_TEXTURE1);
