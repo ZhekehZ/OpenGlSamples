@@ -4,7 +4,10 @@
 #include <vector>
 #include <utility>
 #include <filesystem>
+
+#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
 #include "../mesh.h"
 
 Mesh load_OBJ(std::filesystem::path const & path) {

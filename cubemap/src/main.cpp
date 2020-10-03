@@ -1,12 +1,10 @@
 #include <vector>
 
-#include <fmt/format.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "tiny_obj_loader.h"
 #include "imgui.h"
 
 #include "shader_utils/opengl_shader.h"
@@ -71,17 +69,20 @@ int main(int, char **) {
     int selected_skybox = 0;
     int selected_object = 0;
 
+    bool pre_test = false;
+
     while (!glfwWindowShouldClose(window)) {
-        glEnable(GL_DEPTH_TEST);
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_BLEND);
-
         glfwPollEvents();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.30f, 0.55f, 0.60f, 0.00f);
+        glClearColor(0.8f, 0.55f, 0.60f, 0.00f);
+
+        glDepthFunc(GL_LEQUAL);
+        glEnable(GL_DEPTH_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+        glEnable(GL_ALPHA_TEST);
 
         glm::vec4 camera(0, 0, 1, 1);
 
@@ -130,6 +131,8 @@ int main(int, char **) {
         ImGui::Spacing();
         ImGui::Combo("Object", &selected_object, combobox_options_object.c_str());
         ImGui::Combo("Skybox", &selected_skybox, combobox_options_skybox.c_str());
+        ImGui::Spacing();
+        ImGui::Checkbox("Enable pre-z-test", &pre_test);
         ImGui::End();
 
         // Render object
@@ -146,7 +149,7 @@ int main(int, char **) {
         objectShader.set_uniform("u_color_intensity", color_intensity);
         objectShader.set_uniform("u_refraction_value", refraction_value);
 
-        objects[selected_object].draw(objectShader);
+        objects[selected_object].draw(objectShader, pre_test);
 
         // Render skybox
         glActiveTexture(GL_TEXTURE1);

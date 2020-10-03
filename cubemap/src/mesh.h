@@ -14,15 +14,15 @@ struct MeshPart {
 struct Mesh {
     std::vector<MeshPart> parts;
 
-    void draw(shader_t & shader) {
-        start_Z_buffer_pre_pass();
-
-        for (const auto & part : parts) {
-            glBindVertexArray(part.vao);
-            glDrawArrays(GL_TRIANGLES, 0, part.size);
+    void draw(shader_t & shader, bool pre_test) {
+        if (pre_test) {
+            start_Z_buffer_pre_pass();
+            for (const auto &part : parts) {
+                glBindVertexArray(part.vao);
+                glDrawArrays(GL_TRIANGLES, 0, part.size);
+            }
+            end_Z_buffer_pre_pass();
         }
-
-        end_Z_buffer_pre_pass();
 
         for (const auto & part : parts) {
             if (part.with_texture) {
@@ -38,6 +38,7 @@ struct Mesh {
             glDrawArrays(GL_TRIANGLES, 0, part.size);
         }
 
+        glDepthMask(GL_TRUE);
         glBindTexture(GL_TEXTURE_2D, 0);
         glBindVertexArray(0);
     }
@@ -48,8 +49,6 @@ private:
         glDepthFunc(GL_LESS);
         glColorMask(0, 0, 0, 0);
         glDepthMask(GL_TRUE);
-
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     static void end_Z_buffer_pre_pass() {
