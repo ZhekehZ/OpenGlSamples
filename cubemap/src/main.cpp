@@ -17,6 +17,8 @@
 #include "ogl_imgui_utils.h"
 #include "file_utils.h"
 
+#include "mesh.h"
+
 int main(int, char **) {
     auto window = init_OGL("Viewer");
     if (!window) return 1;
@@ -27,16 +29,13 @@ int main(int, char **) {
     Resource skyboxes_dir = assets.get("skyboxes");
     Resource shaders_dir = assets.get("shaders");
 
-    std::vector<std::tuple<GLuint, VBuffer, IBuffer>> objects;
+    std::vector<Mesh> objects;
     std::string combobox_options_object;
     for (auto const & p : objects_dir.iterate()) {
         auto const & path = p.path();
         if (path.extension() == ".obj") {
             combobox_options_object.append(path.filename().string()).push_back('\0');
-            objects.emplace_back();
-            auto & [id, V, F] = objects.back();
-            std::tie(V, F) = load_OBJ(path);
-            id = init_ogl_buffer<true>(V.data(), int(V.size()), F.data(), int(F.size()));
+            objects.push_back(load_OBJ(path));
         }
     }
     GLuint skybox = init_ogl_buffer(cubeV, cubeVSize, cubeF, cubeFSize);
@@ -77,7 +76,6 @@ int main(int, char **) {
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
-        glEnable(GL_ALPHA_TEST);
 
         glfwPollEvents();
         int display_w, display_h;
@@ -134,7 +132,8 @@ int main(int, char **) {
         ImGui::Combo("Skybox", &selected_skybox, combobox_options_skybox.c_str());
         ImGui::End();
 
-        glActiveTexture(GL_TEXTURE0);
+        // Render object
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_textures[selected_skybox]);
 
         objectShader.use();
@@ -142,18 +141,19 @@ int main(int, char **) {
         objectShader.set_uniform("u_model_normal", glm::value_ptr(model_normal));
         objectShader.set_uniform("u_mvp", glm::value_ptr(mvp));
         objectShader.set_uniform("camera", camera.x, camera.y, camera.z);
-        objectShader.set_uniform("skybox", 0);
+        objectShader.set_uniform("skybox", 1);
         objectShader.set_uniform("reflectivity", reflectivity);
         objectShader.set_uniform("color_intensity", color_intensity);
         objectShader.set_uniform("refraction_value", refraction_value);
 
-        glBindVertexArray(std::get<0>(objects[selected_object]));
-        glDrawElements(GL_TRIANGLES, int(std::get<IBuffer>(objects[selected_object]).size()),
-                       GL_UNSIGNED_INT, nullptr);
+        objects[selected_object].draw(objectShader);
 
+        // Render skybox
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_textures[selected_skybox]);
         skyboxShader.use();
         skyboxShader.set_uniform("u_mvp", glm::value_ptr(vp));
-        skyboxShader.set_uniform("skybox", 0);
+        skyboxShader.set_uniform("skybox", 1);
 
         glBindVertexArray(skybox);
         glDrawElements(GL_TRIANGLES, cubeFSize, GL_UNSIGNED_INT, nullptr);

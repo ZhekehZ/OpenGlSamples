@@ -1,0 +1,45 @@
+#  ==========================================================================
+#  Wavefront Material file
+#  Exported by Red-i Productions' "Riptide Pro"
+#  (a commercial plugin for Cinema 4D PC & Mac, R9.6 or later)
+#  
+#  Red-i Productions
+#  http://skinprops.com
+#  
+#  ==========================================================================
+
+newmtl Mat.1
+Ns 50.781250
+illum 2
+Kd 0.800000 0.800000 0.800000
+bump cassete_textures/tape_bump.jpg
+
+newmtl white_plastic
+Ns 50.781250
+illum 2
+Kd 1.000000 1.000000 1.000000
+
+newmtl sticker
+Ns 50.781250
+illum 2
+Kd 0.800000 0.800000 0.800000
+map_Kd cassete_textures/stickerSurface_Color.jpg
+
+newmtl crome
+Ns 50.781250
+illum 2
+Kd 0.240000 0.240000 0.240000
+Ks 1.000000 1.000000 1.000000
+
+newmtl glass
+Ns 50.781250
+d 0.150000
+Ni 1.500000
+illum 2
+Kd 0.196078 0.196078 0.200000
+
+newmtl black_plastic
+Ns 50.781250
+illum 2
+Kd 0.800000 0.800000 0.800000
+map_Kd cassete_textures/base_color.jpg
