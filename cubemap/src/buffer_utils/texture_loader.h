@@ -7,15 +7,15 @@
 #include <GL/glew.h>
 
 #define STB_IMAGE_IMPLEMENTATION
-
 #include "stb_image.h"
 
 GLuint load_single_texture(std::string const &name) {
     GLuint texture;
 
     int width, height, channels;
-    stbi_set_flip_vertically_on_load(true);
     unsigned char *image = stbi_load(name.c_str(), &width, &height, &channels, STBI_rgb);
+
+    if (!image) std::cerr << "ERROR LOADING IMAGE " << name << std::endl;
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -40,7 +40,7 @@ GLuint load_cube_texture(std::array<std::string, 6> const &names) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + idx++, 0, GL_RGB, width, height,
                          0, GL_RGB, GL_UNSIGNED_BYTE, image);
         } else {
-            std::cerr << "Error loading image " << name << std::endl;
+            std::cerr << "ERROR LOADING IMAGE " << name << std::endl;
         }
         stbi_image_free(image);
     }
