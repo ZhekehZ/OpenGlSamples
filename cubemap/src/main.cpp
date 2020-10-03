@@ -140,11 +140,11 @@ int main(int, char **) {
         objectShader.set_uniform("u_model", glm::value_ptr(model));
         objectShader.set_uniform("u_model_normal", glm::value_ptr(model_normal));
         objectShader.set_uniform("u_mvp", glm::value_ptr(mvp));
-        objectShader.set_uniform("camera", camera.x, camera.y, camera.z);
-        objectShader.set_uniform("skybox", 1);
-        objectShader.set_uniform("reflectivity", reflectivity);
-        objectShader.set_uniform("color_intensity", color_intensity);
-        objectShader.set_uniform("refraction_value", refraction_value);
+        objectShader.set_uniform("u_camera", camera.x, camera.y, camera.z);
+        objectShader.set_uniform("u_skybox", 1);
+        objectShader.set_uniform("u_reflectivity", reflectivity);
+        objectShader.set_uniform("u_color_intensity", color_intensity);
+        objectShader.set_uniform("u_refraction_value", refraction_value);
 
         objects[selected_object].draw(objectShader);
 
@@ -153,7 +153,7 @@ int main(int, char **) {
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_textures[selected_skybox]);
         skyboxShader.use();
         skyboxShader.set_uniform("u_mvp", glm::value_ptr(vp));
-        skyboxShader.set_uniform("skybox", 1);
+        skyboxShader.set_uniform("u_skybox", 1);
 
         glBindVertexArray(skybox);
         glDrawElements(GL_TRIANGLES, cubeFSize, GL_UNSIGNED_INT, nullptr);
