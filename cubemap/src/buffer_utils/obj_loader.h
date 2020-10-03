@@ -5,7 +5,7 @@
 #include <utility>
 #include <filesystem>
 #include "tiny_obj_loader.h"
-#include "mesh.h"
+#include "../mesh.h"
 
 Mesh load_OBJ(std::filesystem::path const & path) {
     // Read data from .obj && .mtl
