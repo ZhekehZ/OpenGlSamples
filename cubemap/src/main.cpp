@@ -62,9 +62,8 @@ int main(int, char **) {
     float alpha = 0.0f, beta = 0.0f;
     float zoom = 0.1f;
 
-    static float reflectivity = 0.5f;
     static float color_intensity = 0.5f;
-    static float refraction_value = 0.6f;
+    static float refraction_value = 2.f;
 
     int selected_skybox = 0;
     int selected_object = 0;
@@ -125,9 +124,8 @@ int main(int, char **) {
 
 
         ImGui::Begin("Settings");
-        ImGui::SliderFloat("Refraction -- Reflection", &reflectivity, 0, 1);
         ImGui::SliderFloat("Color intensity", &color_intensity, 0, 1);
-        ImGui::SliderFloat("Refraction coefficient", &refraction_value, 0, 1);
+        ImGui::SliderFloat("Refraction coefficient", &refraction_value, 1.00001, 5);
         ImGui::Spacing();
         ImGui::Combo("Object", &selected_object, combobox_options_object.c_str());
         ImGui::Combo("Skybox", &selected_skybox, combobox_options_skybox.c_str());
@@ -145,7 +143,6 @@ int main(int, char **) {
         objectShader.set_uniform("u_mvp", glm::value_ptr(mvp));
         objectShader.set_uniform("u_camera", camera.x, camera.y, camera.z);
         objectShader.set_uniform("u_skybox", 1);
-        objectShader.set_uniform("u_reflectivity", reflectivity);
         objectShader.set_uniform("u_color_intensity", color_intensity);
         objectShader.set_uniform("u_refraction_value", refraction_value);
 
