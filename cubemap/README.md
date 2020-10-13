@@ -1,4 +1,4 @@
-### Fractal example
+### CubeMap example
 
 * 3.3 core profile
 * prereqs - conan, cmake
