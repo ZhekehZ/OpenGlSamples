@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtx/transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_interpolation.hpp>
 
 #include "imgui.h"
 
@@ -16,7 +16,7 @@
 
 #include "mesh.h"
 #include "skybox.h"
-#include "tor.h"
+#include "torus.h"
 #include "camera.h"
 
 
@@ -41,9 +41,9 @@ int main(int, char **) {
 
     Camera camera(torus);
 
-    float car_scale = 0.2f / car.get_size();
+    float car_scale = 0.06f / car.get_size();
 
-    auto car_model = glm::rotate(glm::pi<float>()/2, glm::vec3(-1, 0, 0)) *
+    auto car_model = glm::orientation(glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)) *
                      glm::scale(glm::vec3(car_scale, car_scale, car_scale));
 
 
@@ -95,12 +95,12 @@ int main(int, char **) {
         position += direction * (velocity * glm::vec2(torus.get_ratio(), 1.0));
 
         auto model1 = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale) *
-//                        torus.get_rotation(position.x, position.y) *
-                     glm::rotate(dir_angle, glm::vec3(0, -1, 0)) *
+                     torus.get_rotation(position.x, position.y) *
+                     glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) *
                      car_model;
 
         auto model = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale) *
-                      glm::rotate(dir_angle, glm::vec3(0, -1, 0)) *
+                      glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) *
                       car_model;
 
         auto vp = camera.get_VP(model, position, direction, ratio);

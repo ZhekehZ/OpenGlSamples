@@ -25,7 +25,7 @@ class Torus {
     int w_factor_ = 4;
     int h_factor_ = 1;
 
-    float max_height_ = 0.7f;
+    float max_height_ = 0.4f;
 
     float R_, r_;
 
@@ -38,11 +38,9 @@ class Torus {
         return float(image_[3 * (img_x * width_ + img_y)]) / 255.0f;
     };
 
-    [[nodiscard]] glm::vec3 get_point(int i, int j) const {
-        i = (i + steps1_) % steps1_, j = (j + steps2_) % steps2_;
-
-        auto phi = static_cast<float>((M_PI * 2.0 * i) / steps1_);
-        auto psi = static_cast<float>(M_PI * (2.0 * j / steps2_ - 1));
+    [[nodiscard]] glm::vec3 get_point(int i, int j, int shift_x = 0, int shift_y = 0) const {
+        auto phi = static_cast<float>((M_PI * 2.0 * (i + shift_x)) / steps1_);
+        auto psi = static_cast<float>(M_PI * (2.0 * (j + shift_y) / steps2_ - 1));
         float h = get_height(i, j) * max_height_;
 
         return {
@@ -52,30 +50,27 @@ class Torus {
         };
     };
 
-    [[nodiscard]] glm::vec3 get_torus_normal(int i, int j) const {
-        i = (i + steps1_) % steps1_, j = (j + steps2_) % steps2_;
-        auto phi = static_cast<float>((M_PI * 2.0 * i) / steps1_);
-        auto psi = static_cast<float>(M_PI * (2.0 * j / steps2_ - 1));
-        return {cos(psi) * cos(phi), cos(psi) * sin(phi), sin(psi)};
-    };
-
     [[nodiscard]] glm::vec3 get_tex_pos(int i, int j) const {
         return {float(i * w_factor_ * 10) / float(steps1_),
                 float(j * h_factor_ * 10) / float(steps2_),
                 get_height(i, j)};
     };
 
-    [[nodiscard]] glm::vec3 get_normal(int i, int j) const {
-        glm::vec3 p = get_point(i, j);
+    [[nodiscard]] glm::vec3 get_normal(int i, int j, int shift_x = 0, int shift_y = 0) const {
+        glm::vec3 p = get_point(i, j, shift_x, shift_y);
         glm::vec3 vs[] = {
-                get_point(i + 1, j) - p,
-                get_point(i, j - 1) - p,
-                get_point(i - 1, j) - p,
-                get_point(i, j + 1) - p
+                get_point(i + 1, j, shift_x, shift_y) - p,
+                get_point(i, j - 1, shift_x, shift_y) - p,
+                get_point(i - 1, j, shift_x, shift_y) - p,
+                get_point(i, j + 1, shift_x, shift_y) - p
         };
         auto ncp = [](auto & a, auto & b) { return normalize(cross(a, b)); };
         return (ncp(vs[1], vs[0]) + ncp(vs[2], vs[1]) +
                 ncp(vs[3], vs[2]) + ncp(vs[0], vs[3])) / 4.0f;
+    };
+
+    [[nodiscard]] glm::vec3 get_relative_normal(int i, int j) const {
+        return get_normal(i, j, -i + steps1_ / 4, -j + steps2_ / 2);
     };
 
 public:
@@ -179,21 +174,16 @@ public:
         return r_ + glm::dot(coords, hs) * max_height_;
     }
 
-//    [[nodiscard]] glm::mat4 get_rotation(float x, float y) const {
-//        std::swap(x, y);
-//        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
-//
-//        glm::vec3 torus_normal =
-//                (low ? coords.x * get_torus_normal(a, b) : coords.x * get_torus_normal(a + 1, b + 1)) +
-//                 coords.y * get_torus_normal(a + 1, b) +
-//                 coords.z * get_torus_normal(a, b + 1);
-//        glm::vec3 normal =
-//                (low ? coords.x * get_normal(a, b) : coords.x * get_normal(a + 1, b + 1)) +
-//                coords.y * get_normal(a + 1, b) +
-//                coords.z * get_normal(a, b + 1);
-//
-//        return glm::orientation(normal, torus_normal);
-//    }
+    [[nodiscard]] glm::mat4 get_rotation(float x, float y) const {
+        std::swap(x, y);
+        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
+
+        glm::vec3 normal =
+                (low ? coords.x * get_relative_normal(a, b) : coords.x * get_relative_normal(a + 1, b + 1)) +
+                coords.y * get_relative_normal(a + 1, b) +
+                coords.z * get_relative_normal(a, b + 1);
+        return glm::orientation(normal, glm::vec3(0, 1, 0));
+    }
 
     [[nodiscard]] static std::pair<float, float> get_angles_from_pos(float x, float y) {
         auto phi = static_cast<float>(M_PI * 2.0 * x);

@@ -3,7 +3,7 @@
 #include <functional>
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include "tor.h"
+#include "torus.h"
 
 class Camera {
     glm::vec3 current_eye_ = {0, 0, 0};
