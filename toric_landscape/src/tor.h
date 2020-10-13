@@ -1,0 +1,230 @@
+#pragma once
+
+#include <string>
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/trigonometric.hpp>
+#include <glm/gtx/transform.hpp>
+#include <cmath>
+#include <vector>
+#include <glm/gtx/rotate_vector.hpp>
+#include "buffer_utils/texture_loader.h"
+#include "shader_utils/opengl_shader.h"
+
+template <int TextureSlot1, int TextureSlot2, int TextureSlot3>
+class Torus {
+    GLuint vao_{};
+    std::size_t size_ = 0;
+
+    unsigned char * image_;
+    int width_{}, height_{}, channels_{};
+
+    int steps1_ = 1000;
+    int steps2_ = 100;
+
+    int w_factor_ = 4;
+    int h_factor_ = 1;
+
+    float max_height_ = 0.7f;
+
+    float R_, r_;
+
+    shader_t shader_;
+    GLuint t1_, t2_, t3_;
+
+    [[nodiscard]] float get_height(int i, int j) const {
+        int img_x = (i * width_ * w_factor_ / steps1_) % width_;
+        int img_y = (j * height_ * h_factor_ / steps2_) % height_;
+        return float(image_[3 * (img_x * width_ + img_y)]) / 255.0f;
+    };
+
+    [[nodiscard]] glm::vec3 get_point(int i, int j) const {
+        i = (i + steps1_) % steps1_, j = (j + steps2_) % steps2_;
+
+        auto phi = static_cast<float>((M_PI * 2.0 * i) / steps1_);
+        auto psi = static_cast<float>(M_PI * (2.0 * j / steps2_ - 1));
+        float h = get_height(i, j) * max_height_;
+
+        return {
+            (R_ + (r_ + h) * cos(psi)) * cos(phi),
+            (R_ + (r_ + h) * cos(psi)) * sin(phi),
+            (r_ + h) * sin(psi)
+        };
+    };
+
+    [[nodiscard]] glm::vec3 get_torus_normal(int i, int j) const {
+        i = (i + steps1_) % steps1_, j = (j + steps2_) % steps2_;
+        auto phi = static_cast<float>((M_PI * 2.0 * i) / steps1_);
+        auto psi = static_cast<float>(M_PI * (2.0 * j / steps2_ - 1));
+        return {cos(psi) * cos(phi), cos(psi) * sin(phi), sin(psi)};
+    };
+
+    [[nodiscard]] glm::vec3 get_tex_pos(int i, int j) const {
+        return {float(i * w_factor_ * 10) / float(steps1_),
+                float(j * h_factor_ * 10) / float(steps2_),
+                get_height(i, j)};
+    };
+
+    [[nodiscard]] glm::vec3 get_normal(int i, int j) const {
+        glm::vec3 p = get_point(i, j);
+        glm::vec3 vs[] = {
+                get_point(i + 1, j) - p,
+                get_point(i, j - 1) - p,
+                get_point(i - 1, j) - p,
+                get_point(i, j + 1) - p
+        };
+        auto ncp = [](auto & a, auto & b) { return normalize(cross(a, b)); };
+        return (ncp(vs[1], vs[0]) + ncp(vs[2], vs[1]) +
+                ncp(vs[3], vs[2]) + ncp(vs[0], vs[3])) / 4.0f;
+    };
+
+public:
+    Torus(std::string const & height_map, float R, float r, shader_t const & shader, path texture_path)
+        : R_(R), r_(r), shader_(shader)
+    {
+        using namespace glm;
+
+        texture_path.append("t1.jpg");
+        t1_ = load_single_texture(texture_path);
+        texture_path.replace_filename("t2.jpg");
+        t2_ = load_single_texture(texture_path);
+        texture_path.replace_filename("t3.jpg");
+        t3_ = load_single_texture(texture_path);
+
+        glActiveTexture(GL_TEXTURE0 + TextureSlot1);
+        glBindTexture(GL_TEXTURE_2D, t1_);
+        glActiveTexture(GL_TEXTURE0 + TextureSlot2);
+        glBindTexture(GL_TEXTURE_2D, t2_);
+        glActiveTexture(GL_TEXTURE0 + TextureSlot3);
+        glBindTexture(GL_TEXTURE_2D, t3_);
+
+        image_ = stbi_load(height_map.c_str(), &width_, &height_, &channels_, STBI_rgb);
+
+        if (!image_) std::cerr << "ERROR LOADING IMAGE " << height_map << std::endl;
+
+        std::vector<vec3> V;
+        std::vector<int> I;
+
+        int limX = steps1_ + 1;
+        int limY = steps2_ + 1;
+        for (int i = 0; i < limX; ++i) {
+            for (int j = 0; j < limY; ++j) {
+                vec3 v = get_point(i, j);
+                vec3 n = get_normal(i, j);
+                vec3 t = get_tex_pos(i, j);
+
+                V.push_back(v);
+                V.push_back(n);
+                V.push_back(t);
+
+                if (i < limX - 1 && j < limY - 1) {
+                    int a = i * limY + j;
+                    int b = i * limY + j + 1;
+                    int c = (i + 1) * limY + j;
+                    int d = (i + 1) * limY + j + 1;
+
+                    I.push_back(a), I.push_back(b), I.push_back(d);
+                    I.push_back(d), I.push_back(c), I.push_back(a);
+                }
+            }
+        }
+
+        glGenVertexArrays(1, &vao_);
+        glBindVertexArray(vao_);
+
+        size_ = I.size();
+
+        GLuint vbo, ebo;
+        glGenBuffers(1, &vbo);
+        glGenBuffers(1, &ebo);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, V.size() * sizeof(V[0]), V.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, size_ * sizeof(int), I.data(), GL_STATIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void *)(6 * sizeof(float)));
+
+        glBindVertexArray(0);
+    }
+
+    [[nodiscard]] float get_ratio() const {
+        return float(width_ * w_factor_) / float(height_ * h_factor_);
+    }
+
+    template <bool SimpleShader = false>
+    void draw(glm::mat4 mvp) {
+        if (!SimpleShader) {
+            shader_.use();
+            shader_.set_uniform("t1", TextureSlot1);
+            shader_.set_uniform("t2", TextureSlot2);
+            shader_.set_uniform("t3", TextureSlot3);
+            shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+        }
+
+        glBindVertexArray(vao_);
+        glDrawElements(GL_TRIANGLES, size_, GL_UNSIGNED_INT, nullptr);
+    }
+
+    [[nodiscard]] float get_height_from_pos(float x, float y) const {
+        std::swap(x, y);
+        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
+        glm::vec3 hs = glm::vec3{low ? get_height(a, b) : get_height(a + 1, b + 1),
+                                       get_height(a + 1, b),get_height(a, b + 1)};
+        return r_ + glm::dot(coords, hs) * max_height_;
+    }
+
+//    [[nodiscard]] glm::mat4 get_rotation(float x, float y) const {
+//        std::swap(x, y);
+//        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
+//
+//        glm::vec3 torus_normal =
+//                (low ? coords.x * get_torus_normal(a, b) : coords.x * get_torus_normal(a + 1, b + 1)) +
+//                 coords.y * get_torus_normal(a + 1, b) +
+//                 coords.z * get_torus_normal(a, b + 1);
+//        glm::vec3 normal =
+//                (low ? coords.x * get_normal(a, b) : coords.x * get_normal(a + 1, b + 1)) +
+//                coords.y * get_normal(a + 1, b) +
+//                coords.z * get_normal(a, b + 1);
+//
+//        return glm::orientation(normal, torus_normal);
+//    }
+
+    [[nodiscard]] static std::pair<float, float> get_angles_from_pos(float x, float y) {
+        auto phi = static_cast<float>(M_PI * 2.0 * x);
+        auto psi = static_cast<float>(M_PI * (2.0 * y - 1));
+        return {phi + float(M_PI), psi + float(M_PI_2)};
+    }
+
+    template <bool fixed_height = false>
+    [[nodiscard]] glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height = 0) const {
+        auto [alpha, beta] = get_angles_from_pos(pos.x, pos.y);
+        glm::mat4 transformation = glm::rotate(beta, glm::vec3(0, 0, 1)) *
+                                   glm::translate(glm::vec3(0, R_, 0)) *
+                                   glm::rotate(alpha, glm::vec3(1, 0, 0));
+        if constexpr (fixed_height) return transformation;
+        return transformation *
+                glm::translate(glm::vec3(0, get_height_from_pos(pos.x, pos.y) + bottom_height, 0));
+    }
+
+private:
+    [[nodiscard]] std::tuple<glm::vec3, int, int, bool> get_pseudo_barycentric_coords(float x, float y) const {
+        auto w = float(steps1_);
+        auto h = float(steps2_);
+        x -= floor(x);
+        y -= floor(y);
+
+        float a = x * w - floor(x * w);
+        float b = y * h - floor(y * h);
+
+        bool low = a + b < 1;
+        auto coords = low ? glm::vec3{1 - a - b, a, b} :
+                            glm::vec3{a + b - 1, 1 - a, 1 - b};
+        return {coords, int(x * w), int(y * h), low};
+    }
+};
