@@ -25,7 +25,7 @@ public:
         glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 0, 1));
         glm::vec3 up = glm::vec3(model * glm::vec4(0, -1, 0, 0));
         glm::vec3 new_eye = glm::vec3(get_landscape_transform_(position) *
-                                       glm::vec4(direction.y / 4, 0.22, -direction.x / 4, 1));
+                                       glm::vec4(direction.y / 10, 0.08, -direction.x / 10, 1));
 
         eye_speed_ += std::max(0.f, glm::distance(current_eye_, new_eye) / 12.f - 0.05f);
         current_eye_ += (new_eye - current_eye_) * eye_speed_;

@@ -6,6 +6,7 @@
 #include <utility>
 #include <filesystem>
 #include <glm/glm.hpp>
+#include <map>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -118,7 +119,8 @@ private:
             if (tex_name.empty()) return {false, 0};
             auto it = textures.find(tex_name);
             if (it != textures.end()) return {true, it->second};
-            return {true, textures[tex_name] = load_single_texture(path.parent_path().append(tex_name))};
+            textures[tex_name] = load_single_texture(path.parent_path().append(tex_name).string());
+            return {true, textures[tex_name]};
         };
 
         auto get_point = [&](index_t const & index) -> glm::vec3 {

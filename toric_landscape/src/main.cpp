@@ -92,26 +92,21 @@ int main(int, char **) {
             zoom *= wheel > 0 ? 1.2f : 1/1.2f;
         }
 
-        position += direction * (velocity * glm::vec2(torus.get_ratio(), 1.0));
+        position += direction * (velocity * glm::vec2(torus.get_ratio(), 1.0)) / 6.f;
 
-        auto model1 = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale) *
-                     torus.get_rotation(position.x, position.y) *
-                     glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) *
-                     car_model;
+        auto rotated_model = glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) * car_model;
+        auto trans = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale);
+        auto model = trans * torus.get_rotation(position.x, position.y) * rotated_model;
 
-        auto model = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale) *
-                      glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) *
-                      car_model;
-
-        auto vp = camera.get_VP(model, position, direction, ratio);
-        auto mvp = vp * model1;
+        auto vp = camera.get_VP(trans * rotated_model, position, direction, ratio);
+        auto mvp = vp * model;
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
         torus.draw(vp);
-        car.draw(mvp, model1);
+        car.draw(mvp, model);
         box.draw(vp);
 
         ImGui::Render();

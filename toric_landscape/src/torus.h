@@ -1,15 +1,18 @@
 #pragma once
-
 #include <string>
+
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/gtx/transform.hpp>
-#include <cmath>
 #include <vector>
 #include <glm/gtx/rotate_vector.hpp>
 #include "buffer_utils/texture_loader.h"
 #include "shader_utils/opengl_shader.h"
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <cmath>
 
 template <int TextureSlot1, int TextureSlot2, int TextureSlot3>
 class Torus {
@@ -35,7 +38,9 @@ class Torus {
     [[nodiscard]] float get_height(int i, int j) const {
         int img_x = (i * width_ * w_factor_ / steps1_) % width_;
         int img_y = (j * height_ * h_factor_ / steps2_) % height_;
-        return float(image_[3 * (img_x * width_ + img_y)]) / 255.0f;
+        img_x = (img_x + width_) % width_;
+        img_y = (img_y + height_) % height_;
+        return float(image_[3 * (img_x * height_ + img_y)]) / 255.0f;
     };
 
     [[nodiscard]] glm::vec3 get_point(int i, int j, int shift_x = 0, int shift_y = 0) const {
@@ -80,11 +85,11 @@ public:
         using namespace glm;
 
         texture_path.append("t1.jpg");
-        t1_ = load_single_texture(texture_path);
+        t1_ = load_single_texture(texture_path.string());
         texture_path.replace_filename("t2.jpg");
-        t2_ = load_single_texture(texture_path);
+        t2_ = load_single_texture(texture_path.string());
         texture_path.replace_filename("t3.jpg");
-        t3_ = load_single_texture(texture_path);
+        t3_ = load_single_texture(texture_path.string());
 
         glActiveTexture(GL_TEXTURE0 + TextureSlot1);
         glBindTexture(GL_TEXTURE_2D, t1_);
@@ -170,7 +175,7 @@ public:
         std::swap(x, y);
         auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
         glm::vec3 hs = glm::vec3{low ? get_height(a, b) : get_height(a + 1, b + 1),
-                                       get_height(a + 1, b),get_height(a, b + 1)};
+                                       get_height(a + 1, b), get_height(a, b + 1)};
         return r_ + glm::dot(coords, hs) * max_height_;
     }
 
@@ -214,7 +219,7 @@ private:
 
         bool low = a + b < 1;
         auto coords = low ? glm::vec3{1 - a - b, a, b} :
-                            glm::vec3{a + b - 1, 1 - a, 1 - b};
+                            glm::vec3{a + b - 1, 1 - b, 1 - a};
         return {coords, int(x * w), int(y * h), low};
     }
 };
