@@ -56,8 +56,8 @@ class Torus {
     };
 
     [[nodiscard]] glm::vec3 get_tex_pos(int i, int j) const {
-        return {float(i * w_factor_ * 10) / float(steps1_),
-                float(j * h_factor_ * 10) / float(steps2_),
+        return {float(i * w_factor_ * 40) / float(steps1_),
+                float(j * h_factor_ * 40) / float(steps2_),
                 get_height(i, j)};
     };
 
@@ -158,13 +158,16 @@ public:
     }
 
     template <bool SimpleShader = false>
-    void draw(glm::mat4 mvp) {
+    void constexpr draw(glm::mat4 mvp, glm::mat4 u_mvp1) {
         if (!SimpleShader) {
             shader_.use();
             shader_.set_uniform("t1", TextureSlot1);
             shader_.set_uniform("t2", TextureSlot2);
             shader_.set_uniform("t3", TextureSlot3);
             shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+
+            shader_.set_uniform("u_mvp1", glm::value_ptr(u_mvp1));
+            shader_.set_uniform("u_shadow", 5);
         }
 
         glBindVertexArray(vao_);
@@ -179,9 +182,8 @@ public:
         return r_ + glm::dot(coords, hs) * max_height_;
     }
 
-    [[nodiscard]] glm::mat4 get_rotation(float x, float y) const {
-        std::swap(x, y);
-        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
+    [[nodiscard]] glm::mat4 get_rotation(glm::vec2 const & pos) const {
+        auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(pos.y, pos.x);
 
         glm::vec3 normal =
                 (low ? coords.x * get_relative_normal(a, b) : coords.x * get_relative_normal(a + 1, b + 1)) +
@@ -190,15 +192,15 @@ public:
         return glm::orientation(normal, glm::vec3(0, 1, 0));
     }
 
-    [[nodiscard]] static std::pair<float, float> get_angles_from_pos(float x, float y) {
-        auto phi = static_cast<float>(M_PI * 2.0 * x);
-        auto psi = static_cast<float>(M_PI * (2.0 * y - 1));
+    [[nodiscard]] static std::pair<float, float> get_angles_from_pos(glm::vec2 const & pos) {
+        auto phi = static_cast<float>(M_PI * 2.0 * pos.x);
+        auto psi = static_cast<float>(M_PI * (2.0 * pos.y - 1));
         return {phi + float(M_PI), psi + float(M_PI_2)};
     }
 
     template <bool fixed_height = false>
     [[nodiscard]] glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height = 0) const {
-        auto [alpha, beta] = get_angles_from_pos(pos.x, pos.y);
+        auto [alpha, beta] = get_angles_from_pos(pos);
         glm::mat4 transformation = glm::rotate(beta, glm::vec3(0, 0, 1)) *
                                    glm::translate(glm::vec3(0, R_, 0)) *
                                    glm::rotate(alpha, glm::vec3(1, 0, 0));

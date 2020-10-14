@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <glm/glm.hpp>
 #include <map>
+#include <glm/gtc/type_ptr.hpp>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
@@ -57,7 +58,7 @@ public:
 
     template <bool SimpleShader = false>
     void draw(glm::mat4 & mvp, glm::mat4 & model) {
-        if (!SimpleShader) {
+        if constexpr (!SimpleShader) {
             shader_.use();
             shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
             shader_.set_uniform("u_model", glm::value_ptr(model));
@@ -65,8 +66,10 @@ public:
         }
         glBindVertexArray(vao_);
         for (auto [texture, first, size] : parts_) {
-            glActiveTexture(GL_TEXTURE0 + TextureSlot);
-            glBindTexture(GL_TEXTURE_2D, texture);
+            if constexpr (!SimpleShader) {
+                glActiveTexture(GL_TEXTURE0 + TextureSlot);
+                glBindTexture(GL_TEXTURE_2D, texture);
+            }
             glDrawArrays(GL_TRIANGLES, first, size);
         }
     }

@@ -33,6 +33,7 @@ int main(int, char **) {
     shader_t torus_shader(shaders_dir.get_s("object"));
     shader_t skybox_shader(shaders_dir.get_s("skybox"));
     shader_t car_shader(shaders_dir.get_s("objectCar"));
+    shader_t trivial_shader(shaders_dir.get_s("trivial"));
 
     Mesh<0> car(assets.get("objects", "CyberpunkDeLorean.obj"), car_shader);
     Torus<1, 2, 3> torus(assets.get_s("textures", "height_map.jpg"), 4, 1,
@@ -45,6 +46,36 @@ int main(int, char **) {
 
     auto car_model = glm::orientation(glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)) *
                      glm::scale(glm::vec3(car_scale, car_scale, car_scale));
+
+    GLuint shadow_map, depth_buffer, color;
+
+//    glGenTextures(1, &color);
+//    glBindTexture(GL_TEXTURE_2D, color);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, 800, 600, 0,
+//                 GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+
+    glGenTextures(1, &shadow_map);
+    glBindTexture(GL_TEXTURE_2D, shadow_map);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 800, 600, 0,
+                    GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glGenFramebuffers(1, &depth_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_map, 0);
+
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        throw std::runtime_error("Framebuffer initialization error");
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 
 
 
@@ -63,10 +94,6 @@ int main(int, char **) {
         glfwGetFramebufferSize(window, &display_w, &display_h);
         float ratio = float(display_w) / float(display_h);
 
-        glViewport(0, 0, display_w, display_h);
-
-
-        glClear(unsigned(GL_COLOR_BUFFER_BIT) | unsigned(GL_DEPTH_BUFFER_BIT));
 
         if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
             velocity += 0.0007f;
@@ -96,18 +123,50 @@ int main(int, char **) {
 
         auto rotated_model = glm::rotate(-dir_angle, glm::vec3(0, 1, 0)) * car_model;
         auto trans = torus.get_transformation_to_pos(position, car.get_length() / 2 * car_scale);
-        auto model = trans * torus.get_rotation(position.x, position.y) * rotated_model;
+        auto model = trans * torus.get_rotation(position) * rotated_model;
 
         auto vp = camera.get_VP(trans * rotated_model, position, direction, ratio);
         auto mvp = vp * model;
+
+
+        static float time = 0;
+        time += 0.005f;
+        auto view = glm::lookAt<float>(glm::vec3(0, 0, 0),
+                                       glm::vec3(1, 0, 0),
+                                       glm::vec3(0, 1, 0));
+        auto projection = glm::perspective<float>(45, 4/3.f, 0.01f, 11.0f);
+        auto smvp = projection * view * model;
+        auto svp = projection * view;
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        torus.draw(vp);
+        glViewport(0, 0, 800, 600);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, depth_buffer);
+        glClear(GL_DEPTH_BUFFER_BIT);
+//        glClear(GL_COLOR_BUFFER_BIT);
+//        glClearDepth(0);
+
+        trivial_shader.use();
+        trivial_shader.set_uniform("u_mvp", glm::value_ptr(svp));
+        torus.draw<true>(svp, svp);
+        trivial_shader.set_uniform("u_mvp", glm::value_ptr(smvp));
+        car.draw<true>(smvp, model);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glViewport(0, 0, display_w, display_h);
+        glClear(unsigned(GL_COLOR_BUFFER_BIT) | unsigned(GL_DEPTH_BUFFER_BIT));
+
+
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, shadow_map);
+
+        torus.draw(vp, svp);
         car.draw(mvp, model);
         box.draw(vp);
+
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
