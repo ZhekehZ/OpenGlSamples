@@ -57,12 +57,18 @@ public:
     }
 
     template <bool SimpleShader = false>
-    void draw(glm::mat4 & mvp, glm::mat4 & model) {
+    void draw(glm::mat4 & model, glm::mat4 & view, glm::mat4 & projection, glm::mat4 & mvp1) {
         if constexpr (!SimpleShader) {
+            glm::mat4 mvp = projection * view * model;
+            glm::mat4 vmn = glm::transpose(glm::inverse(model));
+
             shader_.use();
             shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+            shader_.set_uniform("u_mvp1", glm::value_ptr(mvp1));
             shader_.set_uniform("u_model", glm::value_ptr(model));
+            shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
             shader_.set_uniform("u_texture", TextureSlot);
+            shader_.set_uniform("u_shadow", 5);
         }
         glBindVertexArray(vao_);
         for (auto [texture, first, size] : parts_) {

@@ -79,8 +79,9 @@ class Torus {
     };
 
 public:
-    Torus(std::string const & height_map, float R, float r, shader_t const & shader, path texture_path)
-        : R_(R), r_(r), shader_(shader)
+    Torus(std::string const & height_map, float R, float r, float max_height,
+          shader_t const & shader, path texture_path)
+        : R_(R), r_(r), max_height_(max_height), shader_(shader)
     {
         using namespace glm;
 
