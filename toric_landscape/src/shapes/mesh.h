@@ -9,8 +9,9 @@
 #include <map>
 #include <glm/gtc/type_ptr.hpp>
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
+#include <src/shaders/opengl_shader.h>
+#include <src/shadows/light_system.h>
 
 namespace detail {
     auto FLOAT_MIN = std::numeric_limits<float>::min();
@@ -56,26 +57,32 @@ public:
         return detail::max_float(sizes.x, sizes.y, sizes.z, 0.0f);
     }
 
-    template <bool SimpleShader = false>
-    void draw(glm::mat4 & model, glm::mat4 & view, glm::mat4 & projection, glm::mat4 & mvp1) {
-        if constexpr (!SimpleShader) {
-            glm::mat4 mvp = projection * view * model;
-            glm::mat4 vmn = glm::transpose(glm::inverse(model));
+    template <typename Shadow>
+    void draw(glm::mat4 model, glm::mat4 view, glm::mat4 projection, LightSystem<Shadow> & lights) {
+        glm::mat4 mvp = projection * view * model;
+        glm::mat4 vmn = glm::transpose(glm::inverse(model));
 
-            shader_.use();
-            shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
-            shader_.set_uniform("u_mvp1", glm::value_ptr(mvp1));
-            shader_.set_uniform("u_model", glm::value_ptr(model));
-            shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
-            shader_.set_uniform("u_texture", TextureSlot);
-            shader_.set_uniform("u_shadow", 5);
-        }
+        shader_.use();
+        shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+        shader_.set_uniform("u_mvp1", glm::value_ptr(lights[GLOBAL_NEAR].get_MVP(model)));
+        shader_.set_uniform("u_mvp_big", glm::value_ptr(lights[GLOBAL_FAR].get_MVP(model)));
+        shader_.set_uniform("u_model", glm::value_ptr(model));
+        shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
+        shader_.set_uniform("u_texture", TextureSlot);
+        shader_.set_uniform("u_shadow", 5);
+        shader_.set_uniform("u_shadow2", 6);
+
         glBindVertexArray(vao_);
         for (auto [texture, first, size] : parts_) {
-            if constexpr (!SimpleShader) {
-                glActiveTexture(GL_TEXTURE0 + TextureSlot);
-                glBindTexture(GL_TEXTURE_2D, texture);
-            }
+            glActiveTexture(GL_TEXTURE0 + TextureSlot);
+            glBindTexture(GL_TEXTURE_2D, texture);
+            glDrawArrays(GL_TRIANGLES, first, size);
+        }
+    }
+
+    void draw() {
+        glBindVertexArray(vao_);
+        for (auto [texture, first, size] : parts_) {
             glDrawArrays(GL_TRIANGLES, first, size);
         }
     }

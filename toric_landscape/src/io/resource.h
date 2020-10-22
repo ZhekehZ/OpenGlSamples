@@ -19,7 +19,7 @@ struct Resource {
         return get(ss...).string();
     }
 
-    auto iterate() const {
+    [[maybe_unused]] [[nodiscard]] auto iterate() const {
         return std::filesystem::directory_iterator(path);
     }
 

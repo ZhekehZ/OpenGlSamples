@@ -7,11 +7,13 @@ in vec2 a_tex;
 in vec3 a_color;
 in float a_mix;
 in vec4 a_shadow;
+in vec4 a_shadow2;
 
 uniform float time;
 uniform sampler2D u_texture;
 
 uniform sampler2D u_shadow;
+uniform sampler2D u_shadow2;
 
 void main() {
     vec3 sun_position = vec3(0, 0, 10);
@@ -19,8 +21,11 @@ void main() {
     vec3 shadow = a_shadow.xyz / a_shadow.w;
     float depth = texture(u_shadow, shadow.xy).x;
 
-    float light = (shadow.x < 1 && shadow.x > 0 && shadow.y < 1 && shadow.y > 0 &&
-                depth < shadow.z - 0.001) ? light1 / 2 : light1;
+    vec3 shadow2 = a_shadow2.xyz / a_shadow2.w;
+    float depth2 = texture(u_shadow2, shadow2.xy).x;
+
+    float light = (shadow.x < 1 && shadow.x > 0 && shadow.y < 1 && shadow.y > 0 && depth < (shadow.z - 0.001))
+        ? light1 / 2 : (depth < (shadow.z - 0.01) ? light1 / 2 : light1);
 
     vec3 color = mix(a_color, texture(u_texture, a_tex).rgb, a_mix);
     o_frag_color = vec4(light * color, 1);

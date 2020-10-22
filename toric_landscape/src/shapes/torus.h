@@ -7,12 +7,13 @@
 #include <glm/gtx/transform.hpp>
 #include <vector>
 #include <glm/gtx/rotate_vector.hpp>
-#include "buffer_utils/texture_loader.h"
-#include "shader_utils/opengl_shader.h"
 
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include <cmath>
+#include <src/shadows/light_system.h>
+
+#define M_PI   3.14159265358979323846   // pi
+#define M_PI_2 1.57079632679489661923   // pi/2
+
 
 template <int TextureSlot1, int TextureSlot2, int TextureSlot3>
 class Torus {
@@ -80,16 +81,17 @@ class Torus {
 
 public:
     Torus(std::string const & height_map, float R, float r, float max_height,
-          shader_t const & shader, path texture_path)
+          shader_t const & shader, path texture_path,
+          std::string const & p1, std::string const & p2, std::string const & p3)
         : R_(R), r_(r), max_height_(max_height), shader_(shader)
     {
         using namespace glm;
 
-        texture_path.append("t1.jpg");
+        texture_path.append(p1);
         t1_ = load_single_texture(texture_path.string());
-        texture_path.replace_filename("t2.jpg");
+        texture_path.replace_filename(p2);
         t2_ = load_single_texture(texture_path.string());
-        texture_path.replace_filename("t3.jpg");
+        texture_path.replace_filename(p3);
         t3_ = load_single_texture(texture_path.string());
 
         glActiveTexture(GL_TEXTURE0 + TextureSlot1);
@@ -158,21 +160,28 @@ public:
         return float(width_ * w_factor_) / float(height_ * h_factor_);
     }
 
-    template <bool SimpleShader = false>
-    void constexpr draw(glm::mat4 mvp, glm::mat4 u_mvp1) {
-        if (!SimpleShader) {
-            shader_.use();
-            shader_.set_uniform("t1", TextureSlot1);
-            shader_.set_uniform("t2", TextureSlot2);
-            shader_.set_uniform("t3", TextureSlot3);
-            shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+    template <typename Shadow>
+    void draw(glm::mat4 mvp, LightSystem<Shadow> & lights) {
+        shader_.use();
+        shader_.set_uniform("t1", TextureSlot1);
+        shader_.set_uniform("t2", TextureSlot2);
+        shader_.set_uniform("t3", TextureSlot3);
+        shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
 
-            shader_.set_uniform("u_mvp1", glm::value_ptr(u_mvp1));
-            shader_.set_uniform("u_shadow", 5);
-        }
+        shader_.set_uniform("u_mvp1", glm::value_ptr(lights[GLOBAL_NEAR].get_VP()));
+        shader_.set_uniform("u_mvp_big", glm::value_ptr(lights[GLOBAL_FAR].get_VP()));
+        shader_.set_uniform("u_mvp_light1", glm::value_ptr(lights[DIRECTIONAL1].get_VP()));
+        shader_.set_uniform("u_shadow", 5);
+        shader_.set_uniform("u_shadow2", 6);
+        shader_.set_uniform("u_shadow3", 7);
 
         glBindVertexArray(vao_);
-        glDrawElements(GL_TRIANGLES, size_, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
+    }
+
+    void constexpr draw() {
+        glBindVertexArray(vao_);
+        glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
     }
 
     [[nodiscard]] float get_height_from_pos(float x, float y) const {
@@ -185,7 +194,6 @@ public:
 
     [[nodiscard]] glm::mat4 get_rotation(glm::vec2 const & pos) const {
         auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(pos.y, pos.x);
-
         glm::vec3 normal =
                 (low ? coords.x * get_relative_normal(a, b) : coords.x * get_relative_normal(a + 1, b + 1)) +
                 coords.y * get_relative_normal(a + 1, b) +
@@ -221,8 +229,8 @@ private:
         float b = y * h - floor(y * h);
 
         bool low = a + b < 1;
-        auto coords = low ? glm::vec3{1 - a - b, a, b} :
-                            glm::vec3{a + b - 1, 1 - b, 1 - a};
+        auto coords = low ? glm::vec3{1 - a - b, a, b}
+                          : glm::vec3{a + b - 1, 1 - b, 1 - a};
         return {coords, int(x * w), int(y * h), low};
     }
 };
