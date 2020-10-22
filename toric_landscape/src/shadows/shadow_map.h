@@ -77,9 +77,8 @@ public:
         return int(current_slot_);
     }
 
-    template <std::size_t TextureSlot>
-    void render(std::function<void(detail::Drawer const &)> const & func) {
-        current_slot_ = TextureSlot;
+    void render(std::function<void(detail::Drawer const &)> const & func, std::size_t textureSlot) {
+        current_slot_ = textureSlot;
         detail::Drawer drawer{&vp_, &shader_};
 
         glBindFramebuffer(GL_FRAMEBUFFER, buffer_);
@@ -89,7 +88,7 @@ public:
         func(drawer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glActiveTexture(GL_TEXTURE0 + TextureSlot);
+        glActiveTexture(GL_TEXTURE0 + textureSlot);
         glBindTexture(GL_TEXTURE_2D, texture_);
     }
 

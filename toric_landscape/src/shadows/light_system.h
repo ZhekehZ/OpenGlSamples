@@ -30,6 +30,6 @@ public:
 
     template <typename ... TypeToSlot>
     void render_all(std::function<void(detail::Drawer const &)> const & func) {
-        (((*this)[TypeToSlot::type].render<TypeToSlot::slot>(func)), ...);
+        (((*this)[TypeToSlot::type].render(func, TypeToSlot::slot)), ...);
     }
 };
