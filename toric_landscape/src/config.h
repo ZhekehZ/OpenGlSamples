@@ -7,7 +7,7 @@ inline const char * OBJECT     = "CyberpunkDeLorean.obj";
 inline const char * HEIGHT_MAP = "height_map.jpg";
 inline const char * TILES      = "tiles";
 inline const char * TILE1      = "p1.jpg";
-inline const char * TILE2      = "p10.png";
+inline const char * TILE2      = "p13.jpg";
 inline const char * TILE3      = "p11.jpg";
 inline const char * SKYBOX     = "galaxy";
 
@@ -18,7 +18,7 @@ inline const char * TRIVIAL_SHADER = "trivial";
 
 inline const float TOR_FST_R = 2.0f;
 inline const float TOR_SND_R = 0.25f;
-inline const float TOR_HEIGHT = 0.2f;
+inline const float TOR_HEIGHT = 0.17f;
 inline const float OBJECT_SIZE = 0.05f;
 
 inline auto get_object_global_matrix(float scale) {

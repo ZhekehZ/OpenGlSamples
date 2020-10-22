@@ -26,8 +26,8 @@ vec3 get_point(mat4 mat, vec4 position) {
     return position.xyz / position.w / 2 + 0.5;
 }
 
-float thresh_low = 0.3;
-float thresh_high = 0.5;
+float thresh_low = 0.15;
+float thresh_high = 0.7;
 float thresh_mid = (thresh_low + thresh_high) / 2;
 float thresh_size_2 = (thresh_high - thresh_low) / 2;
 

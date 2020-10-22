@@ -26,7 +26,7 @@ class Torus {
     int steps1_ = 1000;
     int steps2_ = 100;
 
-    int w_factor_ = 4;
+    int w_factor_ = 6;
     int h_factor_ = 1;
 
     float max_height_ = 0.4f;
