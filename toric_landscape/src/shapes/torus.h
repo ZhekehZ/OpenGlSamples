@@ -172,7 +172,6 @@ public:
         shader_.set_uniform("u_mvp_light_dir", glm::value_ptr(lights[DIRECTIONAL1].get_VP()));
         shader_.set_uniform("u_shadow_near", lights[GLOBAL_NEAR].get_current_slot());
         shader_.set_uniform("u_shadow_far", lights[GLOBAL_FAR].get_current_slot());
-        shader_.set_uniform("u_shadow_dir", lights[DIRECTIONAL1].get_current_slot());
 
         glBindVertexArray(vao_);
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);

@@ -10,8 +10,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <tiny_obj_loader.h>
+
 #include <src/shaders/opengl_shader.h>
 #include <src/shadows/light_system.h>
+#include <src/io/texture_loader.h>
 
 namespace detail {
     auto FLOAT_MIN = std::numeric_limits<float>::min();

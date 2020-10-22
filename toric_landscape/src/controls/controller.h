@@ -24,23 +24,23 @@ public:
     {};
 
     void handle_keys() {
-        if (ImGui::IsKeyPressed(GLFW_KEY_W)) {
-            velocity_ += 0.0007f;
+        if (ImGui::IsKeyDown(GLFW_KEY_W)) {
+            velocity_ += 0.0001f;
         }
-        if (ImGui::IsKeyPressed(GLFW_KEY_S)) {
-            velocity_ -= 0.0007f;
+        if (ImGui::IsKeyDown(GLFW_KEY_S)) {
+            velocity_ -= 0.0001f;
         }
 
-        if (ImGui::IsKeyPressed(GLFW_KEY_D)) {
-            dir_angle_ += 100 * velocity_;
+        if (ImGui::IsKeyDown(GLFW_KEY_D)) {
+            dir_angle_ += 30 * velocity_;
         }
-        if (ImGui::IsKeyPressed(GLFW_KEY_A)) {
-            dir_angle_ -= 100 * velocity_;
+        if (ImGui::IsKeyDown(GLFW_KEY_A)) {
+            dir_angle_ -= 30 * velocity_;
         }
 
         velocity_ /= 1.2f;
-        velocity_ = std::max(std::min(velocity_, .3f), -.005f);
-        if (abs(velocity_) < 0.0002) velocity_ = 0;
+        velocity_ = std::max(std::min(velocity_, .3f), -.3f);
+        if (abs(velocity_) < 0.000001) velocity_ = 0;
 
         direction_ = {cos(dir_angle_), sin(dir_angle_)};
     }

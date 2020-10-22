@@ -43,12 +43,28 @@ inline auto get_directional_light_VP(
     glm::vec2 const & position,
     glm::vec2 const & direction
 ) {
-    glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 1, 1));
+    static float d = 0;
+    if (ImGui::IsKeyPressed(GLFW_KEY_R)) {
+        d += 0.007f;
+        std::cout << d << std::endl;
+    }
+    if (ImGui::IsKeyPressed(GLFW_KEY_T)) {
+        d -= 0.007f;
+        std::cout << d << std::endl;
+    }
+
+    glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 0.1 + d, 1));
     glm::vec3 up = glm::vec3(model * glm::vec4(0, 1, 0, 0));
-    glm::vec3 eye = glm::vec3(model * glm::vec4(0, 0.01, 0.03, 1));
+    glm::vec3 eye = glm::vec3(model * glm::vec4(0, 0.01 + d, 0, 1));
+
+    glBegin(GL_TRIANGLES);
+    glVertex3fv(glm::value_ptr(eye));
+    glVertex3fv(glm::value_ptr(look_at));
+    glVertex3fv(glm::value_ptr(eye + up));
+    glEnd();
 
     auto view = glm::lookAt(eye, look_at, up);
-    auto projection = glm::perspective(glm::radians(30.f), 1.f, 0.001f, 0.2f);
+    auto projection = glm::perspective(glm::radians(30.f), 1.f, 0.01f, 0.5f);
     return projection * view;
 }
 

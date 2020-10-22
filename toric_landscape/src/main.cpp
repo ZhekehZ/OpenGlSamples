@@ -1,5 +1,3 @@
-#include <vector>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtx/transform.hpp>
@@ -10,8 +8,6 @@
 #include <src/shapes/mesh.h>
 #include <src/shapes/skybox.h>
 #include <src/shapes/torus.h>
-#include <src/shadows/shadow_map.h>
-#include <src/shadows/light_system.h>
 #include <src/controls/controller.h>
 
 #include "src/controls/camera.h"
@@ -85,8 +81,7 @@ int main(int, char **) {
 
         lights.render_all<
             to_slot<GLOBAL_NEAR,  5>,
-            to_slot<GLOBAL_FAR,   6>,
-            to_slot<DIRECTIONAL1, 7>
+            to_slot<GLOBAL_FAR,   6>
         >([&](auto const & draw_callback) {
             draw_callback(torus);
             draw_callback(car, model);
@@ -95,7 +90,11 @@ int main(int, char **) {
         glViewport(0, 0, display_w, display_h);
         glClear(unsigned(GL_COLOR_BUFFER_BIT) | unsigned(GL_DEPTH_BUFFER_BIT));
 
-        torus.draw(vp, lights);
+        if (ImGui::IsKeyDown(GLFW_KEY_SPACE)) {
+            torus.draw(lights[DIRECTIONAL1].get_VP(), lights);
+        } else {
+            torus.draw(vp, lights);
+        }
         car.draw(model, view, projection, lights);
         box.draw(vp);
 
