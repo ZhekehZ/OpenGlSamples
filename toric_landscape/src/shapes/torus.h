@@ -33,7 +33,7 @@ class Torus {
 
     float R_, r_;
 
-    shader_t shader_;
+    Shader shader_;
     GLuint t1_, t2_, t3_;
 
     [[nodiscard]] float get_height(int i, int j) const {
@@ -81,7 +81,7 @@ class Torus {
 
 public:
     Torus(std::string const & height_map, float R, float r, float max_height,
-          shader_t const & shader, path texture_path,
+          Shader const & shader, path texture_path,
           std::string const & p1, std::string const & p2, std::string const & p3)
         : R_(R), r_(r), max_height_(max_height), shader_(shader)
     {
@@ -163,17 +163,16 @@ public:
     template <typename Shadow>
     void draw(glm::mat4 mvp, LightSystem<Shadow> & lights) {
         shader_.use();
-        shader_.set_uniform("t1", TextureSlot1);
-        shader_.set_uniform("t2", TextureSlot2);
-        shader_.set_uniform("t3", TextureSlot3);
+        shader_.set_uniform("texture1", TextureSlot1);
+        shader_.set_uniform("texture2", TextureSlot2);
+        shader_.set_uniform("texture3", TextureSlot3);
         shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
-
-        shader_.set_uniform("u_mvp1", glm::value_ptr(lights[GLOBAL_NEAR].get_VP()));
-        shader_.set_uniform("u_mvp_big", glm::value_ptr(lights[GLOBAL_FAR].get_VP()));
-        shader_.set_uniform("u_mvp_light1", glm::value_ptr(lights[DIRECTIONAL1].get_VP()));
-        shader_.set_uniform("u_shadow", 5);
-        shader_.set_uniform("u_shadow2", 6);
-        shader_.set_uniform("u_shadow3", 7);
+        shader_.set_uniform("u_mvp_light_near", glm::value_ptr(lights[GLOBAL_NEAR].get_VP()));
+        shader_.set_uniform("u_mvp_light_far", glm::value_ptr(lights[GLOBAL_FAR].get_VP()));
+        shader_.set_uniform("u_mvp_light_dir", glm::value_ptr(lights[DIRECTIONAL1].get_VP()));
+        shader_.set_uniform("u_shadow_near", lights[GLOBAL_NEAR].get_current_slot());
+        shader_.set_uniform("u_shadow_far", lights[GLOBAL_FAR].get_current_slot());
+        shader_.set_uniform("u_shadow_dir", lights[DIRECTIONAL1].get_current_slot());
 
         glBindVertexArray(vao_);
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
@@ -208,7 +207,7 @@ public:
     }
 
     template <bool fixed_height = false>
-    [[nodiscard]] glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height = 0) const {
+    [[nodiscard]] glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height) const {
         auto [alpha, beta] = get_angles_from_pos(pos);
         glm::mat4 transformation = glm::rotate(beta, glm::vec3(0, 0, 1)) *
                                    glm::translate(glm::vec3(0, R_, 0)) *

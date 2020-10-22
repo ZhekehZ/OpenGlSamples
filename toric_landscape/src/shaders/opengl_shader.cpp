@@ -19,7 +19,7 @@ namespace {
     }
 }
 
-shader_t::shader_t(path shader) {
+Shader::Shader(path shader) {
     shader.replace_extension(".vs");
     const auto vertex_code = read_shader_code(shader.string());
     shader.replace_extension(".fs");
@@ -28,9 +28,9 @@ shader_t::shader_t(path shader) {
     link();
 }
 
-shader_t::~shader_t() = default;
+Shader::~Shader() = default;
 
-void shader_t::compile(const std::string &vertex_code, const std::string &fragment_code) {
+void Shader::compile(const std::string &vertex_code, const std::string &fragment_code) {
     const char *v_code = vertex_code.c_str();
     vertex_id_ = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_id_, 1, &v_code, nullptr);
@@ -43,7 +43,7 @@ void shader_t::compile(const std::string &vertex_code, const std::string &fragme
     check_compile_error();
 }
 
-void shader_t::link() {
+void Shader::link() {
     program_id_ = glCreateProgram();
     glAttachShader(program_id_, vertex_id_);
     glAttachShader(program_id_, fragment_id_);
@@ -53,46 +53,46 @@ void shader_t::link() {
     glDeleteShader(fragment_id_);
 }
 
-void shader_t::use() const {
+void Shader::use() const {
     glUseProgram(program_id_);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<int>(const std::string &name, int val) {
+[[maybe_unused]] void Shader::set_uniform<int>(const std::string &name, int val) {
     glUniform1i(glGetUniformLocation(program_id_, name.c_str()), val);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<bool>(const std::string &name, bool val) {
+[[maybe_unused]] void Shader::set_uniform<bool>(const std::string &name, bool val) {
     glUniform1i(glGetUniformLocation(program_id_, name.c_str()), val);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<float>(const std::string &name, float val) {
+[[maybe_unused]] void Shader::set_uniform<float>(const std::string &name, float val) {
     glUniform1f(glGetUniformLocation(program_id_, name.c_str()), val);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<float>(const std::string &name, float val1, float val2) {
+[[maybe_unused]] void Shader::set_uniform<float>(const std::string &name, float val1, float val2) {
     glUniform2f(glGetUniformLocation(program_id_, name.c_str()), val1, val2);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<float>(const std::string &name, float val1, float val2, float val3) {
+[[maybe_unused]] void Shader::set_uniform<float>(const std::string &name, float val1, float val2, float val3) {
     glUniform3f(glGetUniformLocation(program_id_, name.c_str()), val1, val2, val3);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<const float *>(const std::string &name, const float *val) {
+[[maybe_unused]] void Shader::set_uniform<const float *>(const std::string &name, const float *val) {
     glUniformMatrix4fv(glGetUniformLocation(program_id_, name.c_str()), 1, GL_FALSE, val);
 }
 
 template<>
-[[maybe_unused]] void shader_t::set_uniform<float *>(const std::string &name, float *val) {
+[[maybe_unused]] void Shader::set_uniform<float *>(const std::string &name, float *val) {
     glUniformMatrix4fv(glGetUniformLocation(program_id_, name.c_str()), 1, GL_FALSE, val);
 }
 
-void shader_t::check_compile_error() const {
+void Shader::check_compile_error() const {
     int success;
     char infoLog[1024];
     glGetShaderiv(vertex_id_, GL_COMPILE_STATUS, &success);
@@ -107,7 +107,7 @@ void shader_t::check_compile_error() const {
     }
 }
 
-void shader_t::check_linking_error() const {
+void Shader::check_linking_error() const {
     int success;
     char infoLog[1024];
     glGetProgramiv(program_id_, GL_LINK_STATUS, &success);
@@ -122,16 +122,16 @@ void shader_t::check_linking_error() const {
 }
 
 template<typename T>
-[[maybe_unused]] [[deprecated]] void shader_t::set_uniform(const std::string &name, T) {
+[[maybe_unused]] [[deprecated]] void Shader::set_uniform(const std::string &name, T) {
     throw std::runtime_error("invalid set_uniform call");
 }
 
 template<typename T>
-[[maybe_unused]] [[deprecated]] void shader_t::set_uniform(const std::string &name, T, T) {
+[[maybe_unused]] [[deprecated]] void Shader::set_uniform(const std::string &name, T, T) {
     throw std::runtime_error("invalid set_uniform call");
 }
 
 template<typename T>
-[[maybe_unused]] [[deprecated]] void shader_t::set_uniform(const std::string &name, T, T, T) {
+[[maybe_unused]] [[deprecated]] void Shader::set_uniform(const std::string &name, T, T, T) {
     throw std::runtime_error("invalid set_uniform call");
 }

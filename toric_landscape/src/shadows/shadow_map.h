@@ -9,7 +9,7 @@
 namespace detail {
     struct Drawer {
         glm::mat4 * vp = nullptr;
-        shader_t * shader = nullptr;
+        Shader * shader = nullptr;
 
         template <typename T>
         void operator()(T & obj, glm::mat4 const & model) const {
@@ -30,12 +30,13 @@ class Shadow {
     GLuint buffer_{};
     GLuint texture_{};
     glm::mat4 vp_ = glm::mat4(1);
-    shader_t shader_{};
+    Shader shader_{};
+    std::size_t current_slot_ = -1;
 
 public:
     Shadow() = default;
-    explicit Shadow(shader_t const & shader) : Shadow(glm::mat4(1), shader) {}
-    Shadow(glm::mat4 const & vp, shader_t const & shader)
+    explicit Shadow(Shader const & shader) : Shadow(glm::mat4(1), shader) {}
+    Shadow(glm::mat4 const & vp, Shader const & shader)
         : vp_(vp)
         , shader_(shader)
     {
@@ -72,9 +73,13 @@ public:
         return vp_;
     }
 
+    [[nodiscard]] int get_current_slot() const {
+        return int(current_slot_);
+    }
 
     template <std::size_t TextureSlot>
     void render(std::function<void(detail::Drawer const &)> const & func) {
+        current_slot_ = TextureSlot;
         detail::Drawer drawer{&vp_, &shader_};
 
         glBindFramebuffer(GL_FRAMEBUFFER, buffer_);

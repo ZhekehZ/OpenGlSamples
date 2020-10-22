@@ -15,10 +15,10 @@ template <light_t Type, std::size_t Slot> struct to_slot {
 
 template <typename Shadow>
 class LightSystem : public std::map<light_t, Shadow> {
-    shader_t shader_;
+    Shader shader_;
 
 public:
-    explicit LightSystem(const shader_t &shader) : shader_(shader) {}
+    explicit LightSystem(const Shader &shader) : shader_(shader) {}
 
     void add(light_t t, glm::mat4 const & mat) {
         LightSystem::emplace(t, Shadow(mat, shader_));

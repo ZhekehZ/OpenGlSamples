@@ -43,10 +43,10 @@ class Mesh {
     GLuint vao_ = 0;
     std::vector<std::tuple<GLuint, int, int>> parts_;
     BBox bounds_;
-    shader_t shader_;
+    Shader shader_;
 
 public:
-    explicit Mesh(std::filesystem::path const & path, const shader_t& shader)
+    explicit Mesh(std::filesystem::path const & path, const Shader& shader)
         : shader_(shader)
     {
         load_OBJ(path);
@@ -64,13 +64,11 @@ public:
 
         shader_.use();
         shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
-        shader_.set_uniform("u_mvp1", glm::value_ptr(lights[GLOBAL_NEAR].get_MVP(model)));
-        shader_.set_uniform("u_mvp_big", glm::value_ptr(lights[GLOBAL_FAR].get_MVP(model)));
         shader_.set_uniform("u_model", glm::value_ptr(model));
         shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
         shader_.set_uniform("u_texture", TextureSlot);
-        shader_.set_uniform("u_shadow", 5);
-        shader_.set_uniform("u_shadow2", 6);
+        shader_.set_uniform("u_mvp_light_near", glm::value_ptr(lights[GLOBAL_NEAR].get_MVP(model)));
+        shader_.set_uniform("u_shadow", lights[GLOBAL_NEAR].get_current_slot());
 
         glBindVertexArray(vao_);
         for (auto [texture, first, size] : parts_) {
@@ -174,8 +172,6 @@ private:
             int first = int(V.size()) / 4;
 
             auto [is_textured, texture] = get_texture(shape);
-
-            if (is_textured) std::cout << shape.name << " have texture\n";
 
             // Fill buffer
             int face_index = 0;

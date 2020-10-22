@@ -8,11 +8,11 @@
 
 using namespace std::filesystem;
 
-class shader_t {
+class Shader {
 public:
-    shader_t() = default;
-    explicit shader_t(path);
-    ~shader_t();
+    Shader() = default;
+    explicit Shader(path);
+    ~Shader();
 
     void use() const;
 

@@ -11,12 +11,12 @@ using namespace std::filesystem;
 
 template <int TextureSlot>
 class Skybox {
-    shader_t shader_;
+    Shader shader_;
     GLuint texture_;
     GLuint vertex_data_;
 
 public:
-    Skybox(Resource const & textures, const shader_t & shader)
+    Skybox(Resource const & textures, const Shader & shader)
         : shader_(shader)
     {
         texture_ = load_cube_texture({
