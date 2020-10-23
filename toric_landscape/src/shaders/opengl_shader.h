@@ -19,9 +19,9 @@ public:
     template<typename T>
     [[maybe_unused]] void set_uniform(const std::string &name, T val);
     template<typename T>
-    [[maybe_unused]] [[maybe_unused]] [[maybe_unused]] void set_uniform(const std::string &name, T val1, T val2);
+    [[maybe_unused]] void set_uniform(const std::string &name, T val1, T val2);
     template<typename T>
-    [[maybe_unused]] [[maybe_unused]] void set_uniform(const std::string &name, T val1, T val2, T val3);
+    [[maybe_unused]] void set_uniform(const std::string &name, T val1, T val2, T val3);
 
 private:
     void check_compile_error() const;

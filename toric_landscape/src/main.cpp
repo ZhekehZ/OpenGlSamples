@@ -101,6 +101,11 @@ int main(int, char **) {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
+
+        GLenum err;
+        while((err = glGetError()) != GL_NO_ERROR) {
+            std::cerr << gluErrorString(err) << std::endl;
+        }
     }
 
     dispose_ImGui();
