@@ -49,6 +49,8 @@ int main(int, char **) {
     auto car_model = get_object_global_matrix(car_scale);
     float car_height = car.get_length() / 2 * car_scale;
 
+    float time = 0;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         int display_w, display_h;
@@ -90,11 +92,7 @@ int main(int, char **) {
         glViewport(0, 0, display_w, display_h);
         glClear(unsigned(GL_COLOR_BUFFER_BIT) | unsigned(GL_DEPTH_BUFFER_BIT));
 
-        if (ImGui::IsKeyDown(GLFW_KEY_SPACE)) {
-            torus.draw(lights[DIRECTIONAL1].get_VP(), lights);
-        } else {
-            torus.draw(vp, lights);
-        }
+        torus.draw(vp, lights, time);
         car.draw(model, view, projection, lights);
         box.draw(vp);
 
@@ -106,6 +104,7 @@ int main(int, char **) {
         while((err = glGetError()) != GL_NO_ERROR) {
             std::cerr << gluErrorString(err) << std::endl;
         }
+        time += 0.01f;
     }
 
     dispose_ImGui();

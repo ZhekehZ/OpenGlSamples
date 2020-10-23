@@ -6,9 +6,9 @@ inline const char * CAPTION    = "TOR";
 inline const char * OBJECT     = "CyberpunkDeLorean.obj";
 inline const char * HEIGHT_MAP = "height_map.jpg";
 inline const char * TILES      = "tiles";
-inline const char * TILE1      = "p1.jpg";
-inline const char * TILE2      = "p13.jpg";
-inline const char * TILE3      = "p11.jpg";
+inline const char * TILE1      = "p2.png";
+inline const char * TILE2      = "p1.jpg";
+inline const char * TILE3      = "p3.jpg";
 inline const char * SKYBOX     = "galaxy";
 
 inline const char * TOR_SHADER     = "torus";

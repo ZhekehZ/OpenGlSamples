@@ -161,8 +161,9 @@ public:
     }
 
     template <typename Shadow>
-    void draw(glm::mat4 mvp, LightSystem<Shadow> & lights) {
+    void draw(glm::mat4 mvp, LightSystem<Shadow> & lights, float time) {
         shader_.use();
+        shader_.set_uniform("u_time", time);
         shader_.set_uniform("texture1", TextureSlot1);
         shader_.set_uniform("texture2", TextureSlot2);
         shader_.set_uniform("texture3", TextureSlot3);
@@ -177,7 +178,7 @@ public:
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
     }
 
-    void constexpr draw() {
+    void draw() {
         glBindVertexArray(vao_);
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
     }

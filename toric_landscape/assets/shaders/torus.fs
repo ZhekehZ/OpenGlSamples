@@ -15,6 +15,8 @@ uniform mat4 u_mvp_light_dir;
 uniform sampler2D u_shadow_near;
 uniform sampler2D u_shadow_far;
 
+uniform float u_time;
+
 out vec4 o_frag_color;
 
 bool is_inside(vec3 c) {
@@ -49,17 +51,21 @@ void main() {
     float direct_power = length(shadow_dir - vec3(0.5, 0.5, 0)) / 1.1;
 
     float simple_light = max(dot(normalize(sun_position - a_position), normalize(a_normal)), 0);
-    float global_light = is_near ? (depth_near < (shadow_near.z - 0.01) ? min(0.2, simple_light) : simple_light)
-                                 : (depth_far  < (shadow_far.z - 0.015) ? min(0.2, simple_light) : simple_light);
+    float global_light = is_near ? (depth_near < (shadow_near.z - 0.001) ? min(0.2, simple_light) : simple_light)
+                                 : (depth_far  < (shadow_far.z - 0.0015) ? min(0.2, simple_light) : simple_light);
     float direct_light = is_direct ? max(0, 1 - direct_power) : 0;
 
-    vec3 color1 = texture(texture1, a_tex.xy).rgb;
+    vec2 tex1_coord = a_tex.xy + vec2(sin(u_time) * a_tex.z, a_tex.z);
+    tex1_coord -= floor(tex1_coord);
+
+    vec3 color1 = texture(texture1, tex1_coord).rgb;
     vec3 color2 = texture(texture2, a_tex.xy).rgb;
     vec3 color3 = texture(texture3, a_tex.xy).rgb;
 
     float alpha = min(1, max(0, abs(thresh_mid - a_tex.z) / thresh_size_2));
-    vec3 diffuse = a_tex.z < thresh_mid
-               ? mix(color2, color1, 1 - pow(1 - alpha, 5))
+    vec3 diffuse = a_tex.z < thresh_mid - 0.01
+               ? color1
+               : a_tex.z < thresh_mid ? vec3(0.1, 0.1, 0.1)
                : mix(color2, color3, pow(alpha, 5));
 
     diffuse = diffuse * (global_light + direct_light) + direct * direct_light / 2;
