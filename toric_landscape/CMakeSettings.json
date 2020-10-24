@@ -1,0 +1,62 @@
+﻿{
+  "configurations": [
+    {
+      "name": "x64-Release",
+      "generator": "Visual Studio 16 2019 Win64",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\build\\${name}",
+      "installRoot": "build",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "msvc_x64" ],
+      "variables": [
+        {
+          "name": "fmt_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "glew_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "glfw_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "glm_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "glu_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "imgui_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "opengl_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "stb_DIR",
+          "value": "build",
+          "type": "PATH"
+        },
+        {
+          "name": "tinyobjloader_DIR",
+          "value": "build",
+          "type": "PATH"
+        }
+      ]
+    }
+  ]
+}

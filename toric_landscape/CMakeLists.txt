@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 project(torus CXX)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
