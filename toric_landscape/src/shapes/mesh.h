@@ -54,7 +54,7 @@ public:
         load_OBJ(path);
     }
 
-    [[nodiscard]] float get_size() const noexcept {
+    float get_size() const noexcept {
         auto sizes = bounds_.high - bounds_.low;
         return detail::max_float(sizes.x, sizes.y, sizes.z, 0.0f);
     }
@@ -87,15 +87,15 @@ public:
         }
     }
 
-    [[nodiscard]] float get_height() const {
+    float get_height() const {
         return (bounds_.high - bounds_.low).y;
     }
 
-    [[nodiscard]] float get_width() const {
+    float get_width() const {
         return (bounds_.high - bounds_.low).x;
     }
 
-    [[nodiscard]] float get_length() const {
+    float get_length() const {
         return (bounds_.high - bounds_.low).z;
     }
 

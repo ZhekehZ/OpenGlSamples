@@ -36,7 +36,7 @@ class Torus {
     Shader shader_;
     GLuint t1_, t2_, t3_;
 
-    [[nodiscard]] float get_height(int i, int j) const {
+     float get_height(int i, int j) const {
         int img_x = (i * width_ * w_factor_ / steps1_) % width_;
         int img_y = (j * height_ * h_factor_ / steps2_) % height_;
         img_x = (img_x + width_) % width_;
@@ -44,7 +44,7 @@ class Torus {
         return float(image_[3 * (img_x * height_ + img_y)]) / 255.0f;
     };
 
-    [[nodiscard]] glm::vec3 get_point(int i, int j, int shift_x = 0, int shift_y = 0) const {
+    glm::vec3 get_point(int i, int j, int shift_x = 0, int shift_y = 0) const {
         auto phi = static_cast<float>((M_PI * 2.0 * (i + shift_x)) / steps1_);
         auto psi = static_cast<float>(M_PI * (2.0 * (j + shift_y) / steps2_ - 1));
         float h = get_height(i, j) * max_height_;
@@ -56,13 +56,13 @@ class Torus {
         };
     };
 
-    [[nodiscard]] glm::vec3 get_tex_pos(int i, int j) const {
+     glm::vec3 get_tex_pos(int i, int j) const {
         return {float(i * w_factor_ * 40) / float(steps1_),
                 float(j * h_factor_ * 40) / float(steps2_),
                 get_height(i, j)};
     };
 
-    [[nodiscard]] glm::vec3 get_normal(int i, int j, int shift_x = 0, int shift_y = 0) const {
+     glm::vec3 get_normal(int i, int j, int shift_x = 0, int shift_y = 0) const {
         glm::vec3 p = get_point(i, j, shift_x, shift_y);
         glm::vec3 vs[] = {
                 get_point(i + 1, j, shift_x, shift_y) - p,
@@ -75,7 +75,7 @@ class Torus {
                 ncp(vs[3], vs[2]) + ncp(vs[0], vs[3])) / 4.0f;
     };
 
-    [[nodiscard]] glm::vec3 get_relative_normal(int i, int j) const {
+     glm::vec3 get_relative_normal(int i, int j) const {
         return get_normal(i, j, -i + steps1_ / 4, -j + steps2_ / 2);
     };
 
@@ -156,7 +156,7 @@ public:
         glBindVertexArray(0);
     }
 
-    [[nodiscard]] float get_ratio() const {
+     float get_ratio() const {
         return float(width_ * w_factor_) / float(height_ * h_factor_);
     }
 
@@ -183,7 +183,7 @@ public:
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
     }
 
-    [[nodiscard]] float get_height_from_pos(float x, float y) const {
+     float get_height_from_pos(float x, float y) const {
         std::swap(x, y);
         auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(x, y);
         glm::vec3 hs = glm::vec3{low ? get_height(a, b) : get_height(a + 1, b + 1),
@@ -191,7 +191,7 @@ public:
         return r_ + glm::dot(coords, hs) * max_height_;
     }
 
-    [[nodiscard]] glm::mat4 get_rotation(glm::vec2 const & pos) const {
+     glm::mat4 get_rotation(glm::vec2 const & pos) const {
         auto const & [coords, a, b, low] = get_pseudo_barycentric_coords(pos.y, pos.x);
         glm::vec3 normal =
                 (low ? coords.x * get_relative_normal(a, b) : coords.x * get_relative_normal(a + 1, b + 1)) +
@@ -200,14 +200,14 @@ public:
         return glm::orientation(normal, glm::vec3(0, 1, 0));
     }
 
-    [[nodiscard]] static std::pair<float, float> get_angles_from_pos(glm::vec2 const & pos) {
+     static std::pair<float, float> get_angles_from_pos(glm::vec2 const & pos) {
         auto phi = static_cast<float>(M_PI * 2.0 * pos.x);
         auto psi = static_cast<float>(M_PI * (2.0 * pos.y - 1));
         return {phi + float(M_PI), psi + float(M_PI_2)};
     }
 
     template <bool fixed_height = false>
-    [[nodiscard]] glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height) const {
+     glm::mat4 get_transformation_to_pos(glm::vec2 const & pos, float bottom_height) const {
         auto [alpha, beta] = get_angles_from_pos(pos);
         glm::mat4 transformation = glm::rotate(beta, glm::vec3(0, 0, 1)) *
                                    glm::translate(glm::vec3(0, R_, 0)) *
@@ -218,7 +218,7 @@ public:
     }
 
 private:
-    [[nodiscard]] std::tuple<glm::vec3, int, int, bool> get_pseudo_barycentric_coords(float x, float y) const {
+     std::tuple<glm::vec3, int, int, bool> get_pseudo_barycentric_coords(float x, float y) const {
         auto w = float(steps1_);
         auto h = float(steps2_);
         x -= floor(x);

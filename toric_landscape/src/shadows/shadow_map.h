@@ -13,7 +13,7 @@ namespace detail {
 
         template <typename T>
         void operator()(T & obj, glm::mat4 const & model) const {
-            auto mvp = glm::value_ptr(*vp * model);
+            auto mvp = glm::value_ptr((*vp) * model);
             shader->set_uniform("u_mvp", mvp);
             obj.draw();
         }
@@ -65,15 +65,15 @@ public:
         vp_ = mvp;
     }
 
-    [[nodiscard]] glm::mat4 get_MVP(glm::mat4 const & model) const {
+    glm::mat4 get_MVP(glm::mat4 const & model) const {
         return vp_ * model;
     }
 
-    [[nodiscard]] glm::mat4 get_VP() const {
+    glm::mat4 get_VP() const {
         return vp_;
     }
 
-    [[nodiscard]] int get_current_slot() const {
+    int get_current_slot() const {
         return int(current_slot_);
     }
 

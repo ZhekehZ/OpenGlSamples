@@ -5,21 +5,21 @@
 #include <utility>
 
 struct Resource {
-    Resource(std::filesystem::path path = "assets") : path(std::move(path)) {}
+    Resource(std::filesystem::path path = ASSETS_PATH) : path(std::move(path)) {}
 
     template <typename ... Strings>
-    [[nodiscard]] std::filesystem::path get(Strings const & ... ss) const {
+    std::filesystem::path get(Strings const & ... ss) const {
         auto result = path;
         (... , (result = result.append(ss)));
         return result;
     }
 
     template <typename ... Strings>
-    [[nodiscard]] std::string get_s(Strings const & ... ss) const {
+    std::string get_s(Strings const & ... ss) const {
         return get(ss...).string();
     }
 
-    [[maybe_unused]] [[nodiscard]] auto iterate() const {
+    auto iterate() const {
         return std::filesystem::directory_iterator(path);
     }
 

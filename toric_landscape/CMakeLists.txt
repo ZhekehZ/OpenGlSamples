@@ -41,6 +41,12 @@ add_custom_command(TARGET ${PROJECT_NAME}
 add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
 add_compile_definitions(TINYOBJLOADER_IMPLEMENTATION)
 
+if(MSVC)
+    add_compile_definitions(ASSETS_PATH="../assets")
+else()
+    add_compile_definitions(ASSETS_PATH="assets")
+endif()
+
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR})
 target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
 

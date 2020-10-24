@@ -49,24 +49,24 @@ public:
         position_ += direction_ * (velocity_ * glm::vec2(direction_ratio_, 1.f)) / 2.f;
     }
 
-    [[nodiscard]] glm::mat4 get_rotation() const {
+    glm::mat4 get_rotation() const {
         return glm::rotate(-dir_angle_, glm::vec3(0, 1, 0));
     }
 
-    [[nodiscard]] glm::mat4 get_full_rotation() const {
+    glm::mat4 get_full_rotation() const {
         return get_global_rotation_(position_) * glm::rotate(-dir_angle_, glm::vec3(0, 1, 0));
     }
 
 
-    [[nodiscard]] glm::mat4 rotate_to_direction(glm::mat4 const & mat) const {
+    glm::mat4 rotate_to_direction(glm::mat4 const & mat) const {
         return get_rotation() * mat;
     }
 
-    [[nodiscard]] const glm::vec2 & get_position() const {
+    const glm::vec2 & get_position() const {
         return position_;
     }
 
-    [[nodiscard]] glm::vec2 get_direction() const {
+    glm::vec2 get_direction() const {
         return glm::normalize(direction_);
     }
 };
