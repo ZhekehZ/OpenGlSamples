@@ -1,7 +1,35 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <imgui.h>
+#include <GLFW/glfw3.h>
+
+class Controller;
+
+namespace detail {
+    namespace keyboard {
+        namespace detail {
+            static inline bool is_pressed_[5]; // W A S D Escape
+        }
+
+        enum class keys : int {
+            W = 0, A, S, D, Escape
+        };
+
+        inline void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+            using namespace detail;
+            bool set = action != GLFW_RELEASE;
+            if (key == GLFW_KEY_W) is_pressed_[int(keys::W)] = set;
+            if (key == GLFW_KEY_A) is_pressed_[int(keys::A)] = set;
+            if (key == GLFW_KEY_S) is_pressed_[int(keys::S)] = set;
+            if (key == GLFW_KEY_D) is_pressed_[int(keys::D)] = set;
+            if (key == GLFW_KEY_ESCAPE) is_pressed_[int(keys::Escape)] = set;
+        }
+
+        bool is_pressed(keys key) {
+            return detail::is_pressed_[int(key)];
+        }
+    }
+}
 
 class Controller {
     float velocity_ = 0.0f;
@@ -14,28 +42,34 @@ class Controller {
 
 public:
     template <int x, int y, int z>
-    explicit Controller(Torus<x, y, z> const & tor)
+    explicit Controller(Torus<x, y, z> const & tor, GLFWwindow * window)
         : get_global_rotation_(
             [&](glm::vec2 const & pos) {
                 return tor.get_rotation(pos);
             }
         )
         , direction_ratio_(tor.get_ratio())
-    {};
+    {
+        glfwSetKeyCallback(window, detail::keyboard::key_callback);
+    };
 
-    void handle_keys() {
-        if (ImGui::IsKeyDown(GLFW_KEY_W)) {
+    bool handle_keys() {
+        using namespace detail;
+
+        if (keyboard::is_pressed(keyboard::keys::W)) {
             velocity_ += 0.0001f;
         }
-        if (ImGui::IsKeyDown(GLFW_KEY_S)) {
+        if (keyboard::is_pressed(keyboard::keys::S)) {
             velocity_ -= 0.0001f;
         }
-
-        if (ImGui::IsKeyDown(GLFW_KEY_D)) {
+        if (keyboard::is_pressed(keyboard::keys::D)) {
             dir_angle_ += 30 * velocity_;
         }
-        if (ImGui::IsKeyDown(GLFW_KEY_A)) {
+        if (keyboard::is_pressed(keyboard::keys::A)) {
             dir_angle_ -= 30 * velocity_;
+        }
+        if (keyboard::is_pressed(keyboard::keys::Escape)) {
+            return false;
         }
 
         velocity_ /= 1.2f;
@@ -43,6 +77,7 @@ public:
         if (abs(velocity_) < 0.000001) velocity_ = 0;
 
         direction_ = {cos(dir_angle_), sin(dir_angle_)};
+        return true;
     }
 
     void update() {

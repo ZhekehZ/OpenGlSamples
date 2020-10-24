@@ -1,7 +1,9 @@
+#include <chrono>
+#include <thread>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/gtx/transform.hpp>
-#include <imgui.h>
 
 #include <src/shaders/opengl_shader.h>
 #include <src/io/resource.h>
@@ -11,13 +13,12 @@
 #include <src/controls/controller.h>
 
 #include "src/controls/camera.h"
-#include "ogl_imgui_utils.h"
+#include "ogl_utils.h"
 #include "config.h"
 
 int main(int, char **) {
     auto window = init_OGL(CAPTION);
     if (!window) return 1;
-    init_ImGui(window);
 
     auto [assets, objects, skyboxes, textures, shaders] = get_assets();
     auto [global_far_VP, global_near_P] = get_light_matrices();
@@ -38,7 +39,7 @@ int main(int, char **) {
     Skybox<4> box(skyboxes.get(SKYBOX), skybox_shader);
 
     Camera camera(torus);
-    Controller controller(torus);
+    Controller controller(torus, window);
 
     LightSystem<Shadow<1024>> lights(trivial_shader);
     lights.add(GLOBAL_FAR, global_far_VP);
@@ -51,6 +52,8 @@ int main(int, char **) {
 
     float time = 0;
 
+    auto prev_time = std::chrono::high_resolution_clock::now();
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
         int display_w, display_h;
@@ -58,7 +61,7 @@ int main(int, char **) {
         float ratio = float(display_w) / float(display_h);
         glEnable(GL_DEPTH_TEST);
 
-        controller.handle_keys();
+        if (!controller.handle_keys()) break;
         controller.update();
 
         auto trans = torus.get_transformation_to_pos(controller.get_position(), car_height)
@@ -77,10 +80,6 @@ int main(int, char **) {
         auto [view, projection] = camera.get_VP(car_model, car_height, controller, ratio);
         glm::mat4 vp = projection * view;
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
         lights.render_all<
             to_slot<GLOBAL_NEAR,  5>,
             to_slot<GLOBAL_FAR,   6>
@@ -96,18 +95,15 @@ int main(int, char **) {
         car.draw(model, view, projection, lights);
         box.draw(vp);
 
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
+        print_OGL_errors();
 
-        GLenum err;
-        while((err = glGetError()) != GL_NO_ERROR) {
-            std::cerr << gluErrorString(err) << std::endl;
-        }
         time += 0.01f;
+        auto curr_time = std::chrono::high_resolution_clock::now();
+        std::this_thread::sleep_for(frame_time - (curr_time - prev_time));
+        prev_time = curr_time;
     }
 
-    dispose_ImGui();
     dispose_OGL(window);
     return 0;
 }

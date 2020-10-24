@@ -5,7 +5,6 @@ set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 
 # CONFIG option is important so that CMake doesnt search for modules into the default modules directory
-find_package(imgui CONFIG)
 find_package(glfw CONFIG)
 find_package(glew CONFIG)
 find_package(fmt CONFIG)
@@ -17,10 +16,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(src_dirs shadows shaders shapes io controls)
 
-file(GLOB SOURCES src/*.cpp src/*.h
-        bindings/*.cpp bindings/*.hpp
-        assets/shaders/*.vs assets/shaders/*.fs
-)
+file(GLOB SOURCES src/*.cpp src/*.h assets/shaders/*.vs assets/shaders/*.fs)
 
 foreach(dir ${src_dirs})
     file(GLOB ADD_SOURCES  src/${dir}/*.cpp src/${dir}/*.h)
@@ -48,8 +44,6 @@ else()
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR})
-target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
-
 target_link_libraries(${PROJECT_NAME}
-                        tinyobjloader::tinyobjloader imgui::imgui GLEW::glew_s
+                        tinyobjloader::tinyobjloader GLEW::glew_s
                         glfw::glfw fmt::fmt glm::glm stb::stb)

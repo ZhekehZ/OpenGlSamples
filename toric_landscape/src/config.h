@@ -1,6 +1,10 @@
 #pragma once
 
+#include <chrono>
 #include <glm/glm.hpp>
+
+inline const double MAX_FPS = 60;
+inline const std::chrono::milliseconds frame_time(static_cast<long>(1000.0 / MAX_FPS));
 
 inline const char * CAPTION    = "TOR";
 inline const char * OBJECT     = "CyberpunkDeLorean.obj";
@@ -43,19 +47,9 @@ inline auto get_directional_light_VP(
     glm::vec2 const & position,
     glm::vec2 const & direction
 ) {
-    static float d = 0;
-    if (ImGui::IsKeyPressed(GLFW_KEY_R)) {
-        d += 0.007f;
-        std::cout << d << std::endl;
-    }
-    if (ImGui::IsKeyPressed(GLFW_KEY_T)) {
-        d -= 0.007f;
-        std::cout << d << std::endl;
-    }
-
-    glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 0.1 + d, 1));
+    glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 0.1, 1));
     glm::vec3 up = glm::vec3(model * glm::vec4(0, 1, 0, 0));
-    glm::vec3 eye = glm::vec3(model * glm::vec4(0, 0.01 + d, 0, 1));
+    glm::vec3 eye = glm::vec3(model * glm::vec4(0, 0.01, 0, 1));
 
     auto view = glm::lookAt(eye, look_at, up);
     auto projection = glm::perspective(glm::radians(30.f), 1.f, 0.01f, 0.5f);
