@@ -69,7 +69,8 @@ public:
         shader_.set_uniform("u_model", glm::value_ptr(model));
         shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
         shader_.set_uniform("u_texture", TextureSlot);
-        shader_.set_uniform("u_mvp_light_near", glm::value_ptr(lights[GLOBAL_NEAR].get_MVP(model)));
+        auto near_mvp = lights[GLOBAL_NEAR].get_MVP(model);
+        shader_.set_uniform("u_mvp_light_near", glm::value_ptr(near_mvp));
         shader_.set_uniform("u_shadow", lights[GLOBAL_NEAR].get_current_slot());
 
         glBindVertexArray(vao_);

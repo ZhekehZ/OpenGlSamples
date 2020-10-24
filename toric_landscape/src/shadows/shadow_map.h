@@ -13,7 +13,8 @@ namespace detail {
 
         template <typename T>
         void operator()(T & obj, glm::mat4 const & model) const {
-            auto mvp = glm::value_ptr((*vp) * model);
+            auto mat = *vp * model;
+            auto mvp = glm::value_ptr(mat);
             shader->set_uniform("u_mvp", mvp);
             obj.draw();
         }
