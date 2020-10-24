@@ -5,11 +5,11 @@
 #include <GLFW/glfw3.h>
 #include "fmt/format.h"
 
-static void glfw_error_callback(int error, const char *description) {
+inline void glfw_error_callback(int error, const char *description) {
     std::cerr << fmt::format("Glfw Error {}: {}\n", error, description);
 }
 
-GLFWwindow *init_OGL(std::string const &caption, int width = 800, int height = 600) {
+inline GLFWwindow *init_OGL(std::string const &caption, int width = 800, int height = 600) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return nullptr;
 
@@ -30,7 +30,14 @@ GLFWwindow *init_OGL(std::string const &caption, int width = 800, int height = 6
     return window;
 }
 
-void dispose_OGL(GLFWwindow *window) {
+inline void dispose_OGL(GLFWwindow *window) {
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+inline void print_OGL_errors() {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << gluErrorString(err) << std::endl;
+    }
 }
