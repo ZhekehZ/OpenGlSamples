@@ -17,7 +17,7 @@ jobs:
             - gcc-10
             - g++-10
       before_install:
-        - echo Module $project_dir
+        - echo Project name: $project_dir
         - export CXX=g++-10
         - pip install conan
         - export GENERATOR="Unix Makefile"
@@ -27,7 +27,7 @@ jobs:
     - os: windows
       compiler: msvc19
       before_install:
-        - echo Module $project_dir
+        - echo Project name: $project_dir
         - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
         - choco install visualstudio2019-workload-vctools
         - choco install conan
