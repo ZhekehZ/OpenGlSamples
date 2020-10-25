@@ -27,6 +27,6 @@ jobs:
         - choco install visualstudio2019-workload-vctools
         - choco install conan
       script:
-        - cd toric_landscape && dir && start build.bat
+        - cd toric_landscape && dir && start /B build.bat
       env:
         GENERATOR="Visual Studio 16 2019"
