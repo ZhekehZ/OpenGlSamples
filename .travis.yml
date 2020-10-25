@@ -25,12 +25,11 @@ jobs:
         - cd $project_dir && ls && ./build.sh
 
     - os: windows
-      compiler: msvc
+      compiler: msvc19
       before_install:
         - echo Module $project_dir
-        - choco install python --version 3.7.5
-        - pip install conan
-        - refreshenv.cmd
+        - choco install conan
+        - export PATH="/c/Program Files/Conan/conan:$PATH"
         - conan -v
         - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
         - choco install visualstudio2019-workload-vctools
