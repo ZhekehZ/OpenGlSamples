@@ -37,22 +37,23 @@ vec3 sun_position = vec3(0, 0, 10);
 vec3 ambient = vec3(0.03, 0.03, 0.03);
 vec3 direct = vec3(1, 1, 0.5);
 
+float get_shadow(sampler2D shadow, vec3 coord, float bias) {
+    return texture(shadow, coord.xy).x < coord.z - bias ? 0.1 : 1;
+}
+
 void main() {
     vec4 position = vec4(a_position, 1.0);
     vec3 shadow_far = get_point(u_mvp_light_far, position);
     vec3 shadow_near = get_point(u_mvp_light_near, position);
     vec3 shadow_dir = get_point(u_mvp_light_dir, position);
 
-    float depth_near = texture(u_shadow_near, shadow_near.xy).x;
-    float depth_far = texture(u_shadow_far, shadow_far.xy).x;
-
     bool is_near = is_inside(shadow_near);
     bool is_direct = is_inside(shadow_dir);
     float direct_power = length(shadow_dir - vec3(0.5, 0.5, 0)) / 1.1;
 
     float simple_light = max(dot(normalize(sun_position - a_position), normalize(a_normal)), 0.1);
-    float global_light = is_near ? (depth_near < (shadow_near.z - 0.03) ? min(0.1, simple_light) : simple_light)
-                                 : (depth_far  < (shadow_far.z - 0.02) ? min(0.1, simple_light) : simple_light);
+    float global_light = is_near ? min(get_shadow(u_shadow_near, shadow_near, 0.03), simple_light)
+                                 : min(get_shadow(u_shadow_far, shadow_far, 0.03), simple_light);
     float direct_light = is_direct ? max(0, 1 - direct_power) : 0;
 
     vec2 tex1_coord = a_tex.xy + vec2(sin(u_time) * a_tex.z, a_tex.z);

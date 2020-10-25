@@ -63,10 +63,10 @@ public:
             velocity_ -= 0.0001f;
         }
         if (keyboard::is_pressed(keyboard::keys::D)) {
-            dir_angle_ += 30 * velocity_;
+            dir_angle_ += 60 * velocity_;
         }
         if (keyboard::is_pressed(keyboard::keys::A)) {
-            dir_angle_ -= 30 * velocity_;
+            dir_angle_ -= 60 * velocity_;
         }
         if (keyboard::is_pressed(keyboard::keys::Escape)) {
             return false;
