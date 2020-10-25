@@ -31,13 +31,12 @@ jobs:
         - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
         - choco install visualstudio2019-workload-vctools
         - choco install conan
-        - set conan="C:\Program Files\Conan\conan\conan.exe"
         - set GENERATOR="Visual Studio 16 2019"
       script:
         - cd $project_dir && dir
         - MKDIR build
         - cd build
-        - %conan% install .. -s build_type=Release
+        - "C:\Program Files\Conan\conan\conan.exe" install .. -s build_type=Release
         - cmake .. -G "Visual Studio 16 2019"
         - cmake --build . --config Release
       
