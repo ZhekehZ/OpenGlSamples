@@ -16,7 +16,7 @@ jobs:
         - export CXX=g++-10
         - pip install conan
       script:
-        - cd toric_landscape && ls && ./build.sh
+        - cd $Module && ls && ./build.sh
       env:
         GENERATOR="Unix Makefile"
 
@@ -27,6 +27,14 @@ jobs:
         - choco install visualstudio2019-workload-vctools
         - choco install conan
       script:
-        - cd toric_landscape && dir && start /B build.bat
+        - cd $Module && dir
+        - MKDIR build
+        - cd build
+        - conan install .. -s build_type=Release
+        - cmake .. -G "Visual Studio 16 2019"
+        - cmake --build . --config Release
       env:
         GENERATOR="Visual Studio 16 2019"
+
+env:
+  - Module=toric_landscape
