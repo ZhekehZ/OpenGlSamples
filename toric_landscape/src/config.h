@@ -2,9 +2,13 @@
 
 #include <chrono>
 #include <glm/glm.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <src/io/resource.h>
 
 inline const double MAX_FPS = 60;
 inline const std::chrono::milliseconds frame_time(static_cast<long>(1000.0 / MAX_FPS));
+
+inline const char * ASSETS_PATH = "assets";
 
 inline const char * CAPTION    = "TOR";
 inline const char * OBJECT     = "CyberpunkDeLorean.obj";
@@ -57,7 +61,7 @@ inline auto get_directional_light_VP(
 }
 
 inline auto get_assets() {
-    Resource ASSETS;
+    Resource ASSETS(ASSETS_PATH);
     Resource OBJECTS = ASSETS.get("objects");
     Resource SKYBOXES = ASSETS.get("skyboxes");
     Resource TEXTURES = ASSETS.get("textures");

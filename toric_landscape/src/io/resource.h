@@ -5,7 +5,7 @@
 #include <utility>
 
 struct Resource {
-    Resource(std::filesystem::path path = ASSETS_PATH) : path(std::move(path)) {}
+    Resource(std::filesystem::path path) : path(std::move(path)) {}
 
     template <typename ... Strings>
     std::filesystem::path get(Strings const & ... ss) const {

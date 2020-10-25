@@ -3,6 +3,11 @@ project(torus CXX)
 
 set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+if (MSVC)
+    set(ASSETS_TARGET_DIR Release)
+endif ()
 
 # CONFIG option is important so that CMake doesnt search for modules into the default modules directory
 find_package(glfw CONFIG)
@@ -31,17 +36,12 @@ add_executable(${PROJECT_NAME} ${SOURCES})
 
 add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets ${PROJECT_BINARY_DIR}/assets
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets 
+                                               ${CMAKE_BINARY_DIR}/${ASSETS_TARGET_DIR}/assets
 )
 
 add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
 add_compile_definitions(TINYOBJLOADER_IMPLEMENTATION)
-
-if(MSVC)
-    add_compile_definitions(ASSETS_PATH="../assets")
-else()
-    add_compile_definitions(ASSETS_PATH="assets")
-endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME}

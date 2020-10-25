@@ -1,0 +1,21 @@
+language: cpp
+
+jobs:
+  include:
+    - os: linux
+      dist: bionic
+      compiler: gcc
+      script:
+        - ./build.sh
+      env:
+        GENERATOR="Unix Makefile"
+
+    - os: windows
+      compiler: msvc19
+      before_install:
+        - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
+        - choco install visualstudio2019-workload-vctools
+      script:
+        - build.bat
+      env:
+        GENERATOR="Visual Studio 16 2019"
