@@ -25,9 +25,10 @@ jobs:
         - cd $project_dir && ls && ./build.sh
 
     - os: windows
-      compiler: msvc19
+      compiler: msvc
       before_install:
         - echo Module $project_dir
+        - choco install python --version 3.7.5
         - pip install conan
         - refreshenv.cmd
         - conan -v
