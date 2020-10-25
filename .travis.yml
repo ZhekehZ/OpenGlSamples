@@ -31,7 +31,7 @@ jobs:
         - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
         - choco install visualstudio2019-workload-vctools
         - choco install conan
-        - set PATH=%PATH%;"C:\Program Files\Conan\conan\"
+        - $env:Path += ";C:\Program Files\Conan\conan\"
         - set GENERATOR="Visual Studio 16 2019"
       script:
         - cd $project_dir && dir
