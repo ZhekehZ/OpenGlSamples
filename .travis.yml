@@ -8,7 +8,7 @@ jobs:
       before_install:
         - pip install conan
       script:
-        - cd toric_landscape && ./build.sh
+        - cd toric_landscape && ls && ./build.sh
       env:
         GENERATOR="Unix Makefile"
 
@@ -19,6 +19,6 @@ jobs:
         - choco install visualstudio2019-workload-vctools
         - choco install conan
       script:
-        - cd toric_landscape && build.bat
+        - cd toric_landscape && dir && build.bat
       env:
         GENERATOR="Visual Studio 16 2019"
