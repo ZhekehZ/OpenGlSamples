@@ -5,7 +5,15 @@ jobs:
     - os: linux
       dist: bionic
       compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-10
+            - g++-10
       before_install:
+        - export CXX=g++-10
         - pip install conan
       script:
         - cd toric_landscape && ls && ./build.sh
@@ -19,6 +27,6 @@ jobs:
         - choco install visualstudio2019-workload-vctools
         - choco install conan
       script:
-        - cd toric_landscape && dir && build.bat
+        - cd toric_landscape && dir && start build.bat
       env:
         GENERATOR="Visual Studio 16 2019"
