@@ -4,6 +4,7 @@ in vec3 a_normal;
 in vec3 a_position;
 in vec3 a_tex;
 in vec3 a_color;
+in vec3 a_color_emission;
 in vec3 a_shadow;
 in vec3 a_position_raw;
 
@@ -31,5 +32,5 @@ void main() {
     float light = shadow_depth < (shadow_near.z - 0.001) ? simple_light / 2 : simple_light;
 
     vec3 diffuse = mix(a_color, texture(u_texture, a_tex.xy).rgb, a_tex.z);
-    o_frag_color = vec4(light * diffuse + ambient, 1);
+    o_frag_color = vec4(light * diffuse + ambient + a_color_emission, 1);
 }

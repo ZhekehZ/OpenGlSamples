@@ -156,23 +156,32 @@ private:
         };
 
         auto get_color = [&](shape_t const & shape, int face_index) -> glm::vec3 {
-            if (shape.mesh.material_ids.empty()) return {1, 1, 1};
+            if (shape.mesh.material_ids.empty()) return { 1, 1, 1 };
             auto & mat = materials[shape.mesh.material_ids[face_index]].diffuse;
             return {mat[0], mat[1], mat[2]};
         };
 
-        auto get_tex = [&](shape_t const & shape, index_t const & index, bool is_textured) -> glm::vec3 {
+        auto get_emission_color = [&](shape_t const& shape, int face_index) -> glm::vec3 {
+            if (shape.mesh.material_ids.empty()) return { 0, 0, 0 };
+            auto& mat = materials[shape.mesh.material_ids[face_index]].emission;
+            return { mat[0], mat[1], mat[2] };
+        };
+
+        auto get_tex = [&](shape_t const & shape, index_t const & index, int face_index, bool is_textured) -> glm::vec3 {
             if (!is_textured || attrib.texcoords.empty()) return {0.0f, 0.0f, 0.0f};
+            float mix = materials[shape.mesh.material_ids[face_index]].specular[0];
             return {attrib.texcoords[index.texcoord_index * 2 + 0],
                     attrib.texcoords[index.texcoord_index * 2 + 1],
-                    1.0f};
+                    mix < 1e-7 ? 0 : 1};
         };
 
         // Create VBO
 
+        int constexpr COMPONENTS = 5;
+
         std::vector<glm::vec3> V;
         for (auto const & shape : shapes) {
-            int first = int(V.size()) / 4;
+            int first = int(V.size()) / COMPONENTS;
 
             auto [is_textured, texture] = get_texture(shape);
 
@@ -181,6 +190,7 @@ private:
             for (auto i = 0u; i < shape.mesh.indices.size(); i += shape.mesh.num_face_vertices[face_index++]) {
 
                 const auto & color = get_color(shape, face_index);
+                const auto & emission = get_emission_color(shape, face_index);
 
                 if (shape.mesh.num_face_vertices[face_index] != 3) {
                     throw std::runtime_error("The mesh is not triangulated");
@@ -192,15 +202,16 @@ private:
                     V.push_back(get_point(idx));
                     V.push_back(get_normal(idx));
                     V.push_back(color);
-                    V.push_back(get_tex(shape, idx, is_textured));
+                    V.push_back(emission);
+                    V.push_back(get_tex(shape, idx, face_index, is_textured));
                 }
             }
 
-            int size = int(V.size()) / 4 - first;
+            int size = int(V.size()) / COMPONENTS - first;
             parts_.emplace_back(texture, first, size);
         }
 
-        int stride = 4 * sizeof(V[0]);
+        int stride = COMPONENTS * sizeof(V[0]);
 
         glGenVertexArrays(1, &vao_);
         glBindVertexArray(vao_);
@@ -210,15 +221,10 @@ private:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, V.size() * sizeof(V[0]), V.data(), GL_STATIC_DRAW);
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, nullptr);
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void *)(3 * sizeof(float)));
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void *)(6 * sizeof(float)));
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void *)(9 * sizeof(float)));
-
+        for (int i = 0; i < COMPONENTS; ++i) {
+            glEnableVertexAttribArray(i);
+            glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *) (i * 3 * sizeof(float)));
+        }
         glBindVertexArray(0);
     }
 };
