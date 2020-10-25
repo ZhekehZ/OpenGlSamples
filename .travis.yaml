@@ -6,7 +6,7 @@ jobs:
       dist: bionic
       compiler: gcc
       script:
-        - ./build.sh
+        - cd toric_landscape && ./build.sh
       env:
         GENERATOR="Unix Makefile"
 
@@ -16,6 +16,6 @@ jobs:
         - choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
         - choco install visualstudio2019-workload-vctools
       script:
-        - build.bat
+        - cd toric_landscape && build.bat
       env:
         GENERATOR="Visual Studio 16 2019"
