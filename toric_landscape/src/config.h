@@ -36,13 +36,13 @@ inline auto get_object_global_matrix(float scale) {
 
 inline auto get_light_matrices() {
     auto global_far_VP =
-        glm::ortho(-2.5f, 2.5f, -2.5f, 2.5f, 0.000001f, 2.f) *
+        glm::ortho(-2.5f, 2.5f, -2.5f, 2.5f, 0.5f, 1.5f) *
         glm::lookAt<float>(
             glm::vec3(0, 0, 1),
             glm::vec3(0, 0, 0),
             glm::vec3(0, 1, 0)
         );
-    auto global_near_P = glm::ortho(-0.2f, 0.2f, -0.2f, 0.2f, 0.000001f, 0.5f);
+    auto global_near_P = glm::ortho(-0.2f, 0.2f, -0.2f, 0.2f, 0.02f, 0.4f);
     return std::make_tuple(global_far_VP, global_near_P);
 }
 

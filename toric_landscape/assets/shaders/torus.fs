@@ -50,9 +50,9 @@ void main() {
     bool is_direct = is_inside(shadow_dir);
     float direct_power = length(shadow_dir - vec3(0.5, 0.5, 0)) / 1.1;
 
-    float simple_light = max(dot(normalize(sun_position - a_position), normalize(a_normal)), 0);
-    float global_light = is_near ? (depth_near < (shadow_near.z - 0.001) ? min(0.2, simple_light) : simple_light)
-                                 : (depth_far  < (shadow_far.z - 0.0015) ? min(0.2, simple_light) : simple_light);
+    float simple_light = max(dot(normalize(sun_position - a_position), normalize(a_normal)), 0.1);
+    float global_light = is_near ? (depth_near < (shadow_near.z - 0.03) ? min(0.1, simple_light) : simple_light)
+                                 : (depth_far  < (shadow_far.z - 0.02) ? min(0.1, simple_light) : simple_light);
     float direct_light = is_direct ? max(0, 1 - direct_power) : 0;
 
     vec2 tex1_coord = a_tex.xy + vec2(sin(u_time) * a_tex.z, a_tex.z);

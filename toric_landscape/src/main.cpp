@@ -70,7 +70,7 @@ int main(int, char **) {
 
         auto carPosition = glm::vec3(model * glm::vec4(0, 0, 0, 1));
         auto globalNearLightView = glm::lookAt(
-            carPosition + glm::vec3(0, 0, 0.1), carPosition,glm::vec3(0, 1, 0)
+            carPosition + glm::vec3(0, 0, 0.2), carPosition, glm::vec3(0, 1, 0)
         );
 
         lights[GLOBAL_NEAR].update_vp(global_near_P * globalNearLightView);
