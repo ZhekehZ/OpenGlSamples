@@ -89,7 +89,7 @@ public:
         func(drawer);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glActiveTexture(GL_TEXTURE0 + textureSlot);
+        glActiveTexture(GLenum(GL_TEXTURE0 + textureSlot));
         glBindTexture(GL_TEXTURE_2D, texture_);
     }
 

@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include "shadow_map.h"
 
-enum light_t {
+enum class light_t {
     GLOBAL_FAR, GLOBAL_NEAR, DIRECTIONAL1
 };
 

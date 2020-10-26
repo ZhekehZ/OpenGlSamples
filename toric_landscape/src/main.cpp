@@ -42,9 +42,9 @@ int main(int, char **) {
     Controller controller(torus, window);
 
     LightSystem<Shadow<1024>> lights(trivial_shader);
-    lights.add(GLOBAL_FAR, global_far_VP);
-    lights.add(GLOBAL_NEAR);
-    lights.add(DIRECTIONAL1);
+    lights.add(light_t::GLOBAL_FAR, global_far_VP);
+    lights.add(light_t::GLOBAL_NEAR);
+    lights.add(light_t::DIRECTIONAL1);
 
     float car_scale = OBJECT_SIZE / car.get_size();
     auto car_model = get_object_global_matrix(car_scale);
@@ -73,16 +73,16 @@ int main(int, char **) {
             carPosition + glm::vec3(0, 0, 0.2), carPosition, glm::vec3(0, 1, 0)
         );
 
-        lights[GLOBAL_NEAR].update_vp(global_near_P * globalNearLightView);
-        lights[DIRECTIONAL1].update_vp(
+        lights[light_t::GLOBAL_NEAR].update_vp(global_near_P * globalNearLightView);
+        lights[light_t::DIRECTIONAL1].update_vp(
                 get_directional_light_VP(trans, controller.get_position(), controller.get_direction()));
 
         auto [view, projection] = camera.get_VP(car_model, car_height, controller, ratio);
         glm::mat4 vp = projection * view;
 
         lights.render_all<
-            to_slot<GLOBAL_NEAR,  5>,
-            to_slot<GLOBAL_FAR,   6>
+            to_slot<light_t::GLOBAL_NEAR,  5>,
+            to_slot<light_t::GLOBAL_FAR,   6>
         >([&](auto const & draw_callback) {
             draw_callback(torus);
             draw_callback(car, model);

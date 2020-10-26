@@ -69,9 +69,9 @@ public:
         shader_.set_uniform("u_model", glm::value_ptr(model));
         shader_.set_uniform("u_mv_normal", glm::value_ptr(vmn));
         shader_.set_uniform("u_texture", TextureSlot);
-        auto near_mvp = lights[GLOBAL_NEAR].get_MVP(model);
+        auto near_mvp = lights[light_t::GLOBAL_NEAR].get_MVP(model);
         shader_.set_uniform("u_mvp_light_near", glm::value_ptr(near_mvp));
-        shader_.set_uniform("u_shadow", lights[GLOBAL_NEAR].get_current_slot());
+        shader_.set_uniform("u_shadow", lights[light_t::GLOBAL_NEAR].get_current_slot());
 
         glBindVertexArray(vao_);
         for (auto [texture, first, size] : parts_) {
@@ -196,7 +196,7 @@ private:
                     throw std::runtime_error("The mesh is not triangulated");
                 }
 
-                for (auto j = 0; j < 3; ++j) {
+                for (unsigned j = 0; j < 3; ++j) {
                     auto idx = shape.mesh.indices[i + j];
 
                     V.push_back(get_point(idx));
@@ -223,7 +223,7 @@ private:
 
         for (int i = 0; i < COMPONENTS; ++i) {
             glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *) (i * 3 * sizeof(float)));
+            glVertexAttribPointer(i, 3, GL_FLOAT, GL_FALSE, stride, (void *) (i * 3l * sizeof(float)));
         }
         glBindVertexArray(0);
     }

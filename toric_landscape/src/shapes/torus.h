@@ -168,14 +168,14 @@ public:
         shader_.set_uniform("texture2", TextureSlot2);
         shader_.set_uniform("texture3", TextureSlot3);
         shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
-        auto near_mvp = lights[GLOBAL_NEAR].get_VP();
-        auto far_mvp = lights[GLOBAL_FAR].get_VP();
-        auto dir_mvp = lights[DIRECTIONAL1].get_VP();
+        auto near_mvp = lights[light_t::GLOBAL_NEAR].get_VP();
+        auto far_mvp = lights[light_t::GLOBAL_FAR].get_VP();
+        auto dir_mvp = lights[light_t::DIRECTIONAL1].get_VP();
         shader_.set_uniform("u_mvp_light_near", glm::value_ptr(near_mvp));
         shader_.set_uniform("u_mvp_light_far", glm::value_ptr(far_mvp));
         shader_.set_uniform("u_mvp_light_dir", glm::value_ptr(dir_mvp));
-        shader_.set_uniform("u_shadow_near", lights[GLOBAL_NEAR].get_current_slot());
-        shader_.set_uniform("u_shadow_far", lights[GLOBAL_FAR].get_current_slot());
+        shader_.set_uniform("u_shadow_near", lights[light_t::GLOBAL_NEAR].get_current_slot());
+        shader_.set_uniform("u_shadow_far", lights[light_t::GLOBAL_FAR].get_current_slot());
 
         glBindVertexArray(vao_);
         glDrawElements(GL_TRIANGLES, GLsizei(size_), GL_UNSIGNED_INT, nullptr);
