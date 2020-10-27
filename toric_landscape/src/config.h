@@ -68,3 +68,17 @@ inline auto get_assets() {
     Resource SHADERS = ASSETS.get("shaders");
     return std::make_tuple(ASSETS, OBJECTS, SKYBOXES, TEXTURES, SHADERS);
 }
+
+inline glm::mat4 get_lightVP(
+    glm::mat4 const& model,
+    glm::vec2 const& position,
+    glm::vec2 const& direction
+) {
+    glm::vec3 look_at = glm::vec3(model * glm::vec4(0, 0, 1, 1));
+    glm::vec3 up = glm::vec3(model * glm::vec4(0, 1, 0, 0));
+    glm::vec3 eye = glm::vec3(model * glm::vec4(0, 0.01, 0.03, 1));
+
+    auto view = glm::lookAt(eye, look_at, up);
+    auto projection = glm::perspective(glm::radians(30.f), 1.f, 0.001f, 0.2f);
+    return projection * view;
+}

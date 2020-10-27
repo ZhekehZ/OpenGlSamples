@@ -7,26 +7,38 @@ class Controller;
 
 namespace detail {
     namespace keyboard {
-        namespace detail {
-            static inline bool is_pressed_[5]; // W A S D Escape
-        }
-
         enum class keys : int {
             W = 0, A, S, D, Escape
         };
 
-        inline void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-            using namespace detail;
-            bool set = action != GLFW_RELEASE;
-            if (key == GLFW_KEY_W) is_pressed_[int(keys::W)] = set;
-            if (key == GLFW_KEY_A) is_pressed_[int(keys::A)] = set;
-            if (key == GLFW_KEY_S) is_pressed_[int(keys::S)] = set;
-            if (key == GLFW_KEY_D) is_pressed_[int(keys::D)] = set;
-            if (key == GLFW_KEY_ESCAPE) is_pressed_[int(keys::Escape)] = set;
+        namespace detail {
+            inline bool is_pressed_[5]; // W A S D Escape
+        
+            inline void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+                using namespace detail;
+                bool set = action != GLFW_RELEASE;
+                if (key == GLFW_KEY_W) is_pressed_[int(keys::W)] = set;
+                if (key == GLFW_KEY_A) is_pressed_[int(keys::A)] = set;
+                if (key == GLFW_KEY_S) is_pressed_[int(keys::S)] = set;
+                if (key == GLFW_KEY_D) is_pressed_[int(keys::D)] = set;
+                if (key == GLFW_KEY_ESCAPE) is_pressed_[int(keys::Escape)] = set;
+            }
         }
 
-        bool is_pressed(keys key) {
+        inline bool is_pressed(keys key) {
             return detail::is_pressed_[int(key)];
+        }
+    }
+
+    namespace mouse {
+        inline float zoom_ = 1.0;
+
+        namespace detail {
+            inline void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+                if (yoffset > 0.1) zoom_ *= 1.2;
+                if (yoffset < -0.1) zoom_ /= 1.2;
+                zoom_ = std::max(std::min(zoom_, 10.0f), 1.0f);
+            }
         }
     }
 }
@@ -34,6 +46,7 @@ namespace detail {
 class Controller {
     float velocity_ = 0.0f;
     float dir_angle_ = 0.0f;
+
     glm::vec2 position_{0, 0.5};
     glm::vec2 direction_{0, 1};
     float direction_ratio_ = 1.0f;
@@ -50,7 +63,8 @@ public:
         )
         , direction_ratio_(tor.get_ratio())
     {
-        glfwSetKeyCallback(window, detail::keyboard::key_callback);
+        glfwSetKeyCallback(window, detail::keyboard::detail::key_callback);
+        glfwSetScrollCallback(window, detail::mouse::detail::scroll_callback);
     };
 
     bool handle_keys() {
@@ -103,5 +117,9 @@ public:
 
     glm::vec2 get_direction() const {
         return glm::normalize(direction_);
+    }
+
+    float get_zoom() const {
+        return detail::mouse::zoom_;
     }
 };

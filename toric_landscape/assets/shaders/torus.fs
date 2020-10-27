@@ -52,7 +52,7 @@ void main() {
     float direct_power = length(shadow_dir - vec3(0.5, 0.5, 0)) / 1.1;
 
     float simple_light = max(dot(normalize(sun_position - a_position), normalize(a_normal)), 0.1);
-    float global_light = is_near ? min(get_shadow(u_shadow_near, shadow_near, 0.03), simple_light)
+    float global_light = is_near ? min(get_shadow(u_shadow_near, shadow_near, 0.02), simple_light)
                                  : min(get_shadow(u_shadow_far, shadow_far, 0.03), simple_light);
     float direct_light = is_direct ? max(0, 1 - direct_power) : 0;
 
