@@ -60,8 +60,8 @@ void main() {
     vec2 tex1_coord = a_tex.xy + vec2(sin(u_time) * a_tex.z, a_tex.z);
     tex1_coord -= floor(tex1_coord);
     
-    float z = gl_FragCoord.z / gl_FragCoord.w;
-    vec3 details = mix(texture(u_detail, a_tex.xy).rgb, vec3(1, 1, 1), z);
+    float depth = gl_FragCoord.z / gl_FragCoord.w;
+    vec3 details = mix(texture(u_detail, a_tex.xy).rgb, vec3(1, 1, 1), depth);
 
     vec3 color1 = texture(texture1, tex1_coord).rgb;
     vec3 color2 = texture(texture2, a_tex.xy).rgb;
