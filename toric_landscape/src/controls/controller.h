@@ -54,8 +54,8 @@ class Controller {
     std::function<glm::mat4(glm::vec2)> get_global_rotation_{};
 
 public:
-    template <int x, int y, int z>
-    explicit Controller(Torus<x, y, z> const & tor, GLFWwindow * window)
+    template <int ... slots>
+    explicit Controller(Torus<slots ...> const & tor, GLFWwindow * window)
         : get_global_rotation_(
             [&](glm::vec2 const & pos) {
                 return tor.get_rotation(pos);

@@ -15,7 +15,7 @@
 #define M_PI_2 1.57079632679489661923   // pi/2
 
 
-template <int TextureSlot1, int TextureSlot2, int TextureSlot3>
+template <int TextureSlot1, int TextureSlot2, int TextureSlot3, int DetailTextureSlot>
 class Torus {
     GLuint vao_{};
     std::size_t size_ = 0;
@@ -34,7 +34,7 @@ class Torus {
     float R_, r_;
 
     Shader shader_;
-    GLuint t1_, t2_, t3_;
+    GLuint t1_, t2_, t3_, detail_;
 
      float get_height(int i, int j) const {
         int img_x = (i * width_ * w_factor_ / steps1_) % width_;
@@ -80,10 +80,21 @@ class Torus {
     };
 
 public:
-    Torus(std::string const & height_map, float R, float r, float max_height,
-          Shader const & shader, path texture_path,
-          std::string const & p1, std::string const & p2, std::string const & p3)
-        : R_(R), r_(r), max_height_(max_height), shader_(shader)
+    Torus(  
+        std::string const & height_map, 
+        float R, 
+        float r, 
+        float max_height,
+        Shader const & shader, 
+        path texture_path,
+        std::string const & p1, 
+        std::string const & p2, 
+        std::string const & p3,
+        std::string const & detail_texture
+    ) : R_(R)
+      , r_(r)
+      , max_height_(max_height)
+      , shader_(shader)
     {
         using namespace glm;
 
@@ -93,6 +104,8 @@ public:
         t2_ = load_single_texture(texture_path.string());
         texture_path.replace_filename(p3);
         t3_ = load_single_texture(texture_path.string());
+        texture_path.replace_filename(detail_texture);
+        detail_ = load_single_texture(texture_path.string());
 
         glActiveTexture(GL_TEXTURE0 + TextureSlot1);
         glBindTexture(GL_TEXTURE_2D, t1_);
@@ -100,6 +113,8 @@ public:
         glBindTexture(GL_TEXTURE_2D, t2_);
         glActiveTexture(GL_TEXTURE0 + TextureSlot3);
         glBindTexture(GL_TEXTURE_2D, t3_);
+        glActiveTexture(GL_TEXTURE0 + DetailTextureSlot);
+        glBindTexture(GL_TEXTURE_2D, detail_);
 
         image_ = stbi_load(height_map.c_str(), &width_, &height_, &channels_, STBI_rgb);
 
@@ -167,10 +182,13 @@ public:
         shader_.set_uniform("texture1", TextureSlot1);
         shader_.set_uniform("texture2", TextureSlot2);
         shader_.set_uniform("texture3", TextureSlot3);
+        shader_.set_uniform("u_detail", DetailTextureSlot);
         shader_.set_uniform("u_mvp", glm::value_ptr(mvp));
+
         auto near_mvp = lights[light_t::GLOBAL_NEAR].get_VP();
         auto far_mvp = lights[light_t::GLOBAL_FAR].get_VP();
         auto dir_mvp = lights[light_t::DIRECTIONAL1].get_VP();
+        
         shader_.set_uniform("u_mvp_light_near", glm::value_ptr(near_mvp));
         shader_.set_uniform("u_mvp_light_far", glm::value_ptr(far_mvp));
         shader_.set_uniform("u_mvp_light_dir", glm::value_ptr(dir_mvp));

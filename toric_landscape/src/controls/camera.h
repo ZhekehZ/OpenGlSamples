@@ -10,8 +10,8 @@ class Camera {
     std::function<glm::mat4(glm::vec2 const & pos, float)> get_landscape_transform_;
 
 public:
-    template <int x, int y, int z>
-    explicit Camera(Torus<x, y, z> const & tor)
+    template <int  ... slots>
+    explicit Camera(Torus<slots ...> const & tor)
         : get_landscape_transform_(
             [&](glm::vec2 const & pos, float delta) {
                 return tor.get_transformation_to_pos(pos, delta);
@@ -31,8 +31,10 @@ public:
 
         glm::vec3 look_at = glm::vec3(get_landscape_transform_(position, 0) * glm::vec4(0, 0, 0, 1));
         glm::vec3 up = glm::vec3(model * glm::vec4(0, 0, 1, 0));
+
+        float zoom = controller.get_zoom();
         glm::vec3 new_eye = glm::vec3(get_landscape_transform_(position, 0) *
-                                       glm::vec4(direction.y / 10, 0.08 * controller.get_zoom(), -direction.x / 10, 1));
+                                       glm::vec4(direction.y / 10 * sqrt(zoom), 0.08 * zoom, -direction.x / 10 * sqrt(zoom), 1));
 
         float d = glm::distance(current_eye_, new_eye);
         current_eye_ = d < 0.001f ? current_eye_ : current_eye_ + (new_eye - current_eye_) / 20.f;

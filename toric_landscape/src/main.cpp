@@ -29,12 +29,12 @@ int main(int, char **) {
     Shader trivial_shader(shaders.get(TRIVIAL_SHADER));
 
     Mesh<0> car(objects.get(OBJECT), car_shader);
-    Torus<1, 2, 3> torus(
+    Torus<1, 2, 3, 7> torus(
         textures.get_s(HEIGHT_MAP),
         TOR_FST_R, TOR_SND_R, TOR_HEIGHT,
         torus_shader,
         textures.get(TILES),
-        TILE1, TILE2, TILE3
+        TILE1, TILE2, TILE3, DETAIL
     );
     Skybox<4> box(skyboxes.get(SKYBOX), skybox_shader);
 

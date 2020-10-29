@@ -7,6 +7,7 @@ in vec3 a_tex;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+uniform sampler2D u_detail;
 
 uniform mat4 u_mvp_light_near;
 uniform mat4 u_mvp_light_far;
@@ -58,10 +59,13 @@ void main() {
 
     vec2 tex1_coord = a_tex.xy + vec2(sin(u_time) * a_tex.z, a_tex.z);
     tex1_coord -= floor(tex1_coord);
+    
+    float z = gl_FragCoord.z / gl_FragCoord.w;
+    vec3 details = mix(texture(u_detail, a_tex.xy).rgb, vec3(1, 1, 1), z);
 
     vec3 color1 = texture(texture1, tex1_coord).rgb;
     vec3 color2 = texture(texture2, a_tex.xy).rgb;
-    vec3 color3 = texture(texture3, a_tex.xy).rgb;
+    vec3 color3 = texture(texture3, a_tex.xy).rgb * details;
 
     float alpha = min(1, max(0, abs(thresh_mid - a_tex.z) / thresh_size_2));
     vec3 diffuse = a_tex.z < thresh_mid - 0.01

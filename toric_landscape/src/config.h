@@ -13,6 +13,7 @@ inline const char * ASSETS_PATH = "assets";
 inline const char * CAPTION    = "TOR";
 inline const char * OBJECT     = "CyberpunkDeLorean.obj";
 inline const char * HEIGHT_MAP = "height_map.jpg";
+inline const char * DETAIL     = "detail.jpg";
 inline const char * TILES      = "tiles";
 inline const char * TILE1      = "p2.png";
 inline const char * TILE2      = "p1.jpg";
