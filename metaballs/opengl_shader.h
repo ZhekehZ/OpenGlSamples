@@ -17,9 +17,12 @@ public:
     ~shader_t();
 
     void use() const;
-    template<typename T> void set_uniform(const std::string& name, T val) { throw std::runtime_error("unimplemented"); };
-    template<typename T> void set_uniform(const std::string& name, T val1, T val2) { throw std::runtime_error("unimplemented"); };
-    template<typename T> void set_uniform(const std::string& name, T val1, T val2, T val3) { throw std::runtime_error("unimplemented"); };
+    template<typename T>
+    void set_uniform(const std::string& name, T val);
+    template<typename T>
+    void set_uniform(const std::string& name, T val1, T val2);
+    template<typename T>
+    void set_uniform(const std::string& name, T val1, T val2, T val3);
 
 private:
     void check_compile_error() const;

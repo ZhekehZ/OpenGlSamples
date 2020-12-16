@@ -1,10 +1,9 @@
 #version 430 core
 layout (points) in;
-layout (triangle_strip, max_vertices = 9) out;
+layout (triangle_strip, max_vertices = 15) out;
 
-in vs_to_gs_t {
-    float f;
-} gs_in[];
+uniform mat4 MVP;
+uniform float hedge_size;
 
 // data & algorithm source: http://paulbourke.net/geometry/polygonise/
 int triangle_table[256][16] = {
@@ -302,30 +301,30 @@ int edge_table[256] = {
 };
 
 float F(vec3 position) {
-    return length(position);
+    return length(position) - 0.3;
 }
 
 vec3 interpolate(vec3 point1, vec3 point2, float value1, float value2) {
-    return point1;
+    return point1 + (point2 - point1) * abs(value1) / (abs(value1) + abs(value2));
 }
 
 vec3 points[12];
 
-int produce(vec3 center, float hedge_size) {
+void produce(vec3 center) {
     vec3 cube[8] = {
-        center + vec3(+hedge_size, +hedge_size, +hedge_size),
-        center + vec3(+hedge_size, +hedge_size, -hedge_size),
+        center + vec3(-hedge_size, -hedge_size, +hedge_size),
         center + vec3(+hedge_size, -hedge_size, +hedge_size),
         center + vec3(+hedge_size, -hedge_size, -hedge_size),
+        center + vec3(-hedge_size, -hedge_size, -hedge_size),
         center + vec3(-hedge_size, +hedge_size, +hedge_size),
+        center + vec3(+hedge_size, +hedge_size, +hedge_size),
+        center + vec3(+hedge_size, +hedge_size, -hedge_size),
         center + vec3(-hedge_size, +hedge_size, -hedge_size),
-        center + vec3(-hedge_size, -hedge_size, +hedge_size),
-        center + vec3(-hedge_size, -hedge_size, -hedge_size)
     };
 
-    float fs[8] = { 1,1,-1,-1, 1,-1,1,-1
-//        F(cube[0]), F(cube[1]), F(cube[2]), F(cube[3]),
-//        F(cube[4]), F(cube[5]), F(cube[6]), F(cube[7])
+    float fs[8] = {
+        F(cube[0]), F(cube[1]), F(cube[2]), F(cube[3]),
+        F(cube[4]), F(cube[5]), F(cube[6]), F(cube[7])
     };
 
     int index = 0;
@@ -340,6 +339,8 @@ int produce(vec3 center, float hedge_size) {
 
     int edges = edge_table[index];
 
+    if (edges == 0) return;
+
     if ((edges & 1) != 0) points[0] = interpolate(cube[0], cube[1], fs[0], fs[1]);
     if ((edges & 2) != 0) points[1] = interpolate(cube[1], cube[2], fs[1], fs[2]);
     if ((edges & 4) != 0) points[2] = interpolate(cube[2], cube[3], fs[2], fs[3]);
@@ -353,32 +354,18 @@ int produce(vec3 center, float hedge_size) {
     if ((edges & 1024) != 0) points[10] = interpolate(cube[2], cube[6], fs[2], fs[6]);
     if ((edges & 2048) != 0) points[11] = interpolate(cube[3], cube[7], fs[3], fs[7]);
 
-    int n_triangles = 0;
-    for (int i = 0; n_triangles < 2 && triangle_table[index][i] != -1; i += 3) {
-        gl_Position = vec4(points[triangle_table[index][i    ]], 1);
+    for (int i = 0; i < 16 && triangle_table[index][i] != -1; i += 3) {
+        gl_Position = MVP * vec4(points[triangle_table[index][i    ]], 1);
         EmitVertex();
-        gl_Position = vec4(points[triangle_table[index][i + 1]], 1);
+        gl_Position = MVP * vec4(points[triangle_table[index][i + 1]], 1);
         EmitVertex();
-        gl_Position = vec4(points[triangle_table[index][i + 2]], 1);
+        gl_Position = MVP * vec4(points[triangle_table[index][i + 2]], 1);
         EmitVertex();
         EndPrimitive();
-        ++n_triangles;
     }
-
-    return n_triangles;
 }
 
-void draw_meta_ball(vec3 center) {
-    gl_Position = vec4(center + vec3(0.2, 0, 0), 1);
-    EmitVertex();
-    gl_Position = vec4(center + vec3(0.0, 0.1, 0), 1);
-    EmitVertex();
-    gl_Position = vec4(center + vec3(0.0, 0, 0), 1);
-    EmitVertex();
-    EndPrimitive();
-}
 
 void main() {
-    draw_meta_ball(gl_in[0].gl_Position.xyz);
-    produce(gl_in[0].gl_Position.xyz, 0.2);
+    produce(gl_in[0].gl_Position.xyz);
 }
