@@ -9,6 +9,7 @@
 2. `cd build`
 3. run `[Release/]metaballs[.exe]`
 
-#### Screenshots
+#### Example
 <p align="center">
+  <img src="https://github.com/ZhekehZ/OpenGlSamples/blob/metaballs/metaballs/examples/metaballs.gif?raw=true">
 </p>
