@@ -12,8 +12,9 @@ find_package(glfw CONFIG)
 find_package(glew CONFIG)
 find_package(fmt CONFIG)
 find_package(glm CONFIG)
+find_package(stb CONFIG)
 
-add_executable( metaballs
+add_executable( ${PROJECT_NAME}
                 main.cpp
                 opengl_shader.cpp
                 opengl_shader.h
@@ -25,12 +26,13 @@ add_executable( metaballs
         assets/fragment.shader
         assets/geometry.shader)
 
-add_custom_command(TARGET metaballs
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/vertex.shader ${PROJECT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/fragment.shader ${PROJECT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/geometry.shader ${PROJECT_BINARY_DIR}
-)
+add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets
+        ${CMAKE_BINARY_DIR}/${ASSETS_TARGET_DIR}/assets
+        )
 
-target_compile_definitions(metaballs PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
-target_link_libraries(metaballs imgui::imgui GLEW::glew_s glfw::glfw fmt::fmt glm::glm)
+add_compile_definitions(STB_IMAGE_IMPLEMENTATION)
+
+target_compile_definitions(${PROJECT_NAME} PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)
+target_link_libraries(${PROJECT_NAME} imgui::imgui GLEW::glew_s glfw::glfw fmt::fmt glm::glm stb::stb)

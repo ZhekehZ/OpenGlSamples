@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <chrono>
 #include <fmt/format.h>
 #include <GL/glew.h>
@@ -9,6 +10,10 @@
 #include "opengl_shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <random>
+#include "cube_data.h"
+#include "texture_loader.h"
 
 static void glfw_error_callback(int error, const char *description) {
    std::cerr << fmt::format("Glfw Error {}: {}\n", error, description);
@@ -21,15 +26,19 @@ inline void print_OGL_errors() {
     }
 }
 
-std::vector<float> V;
+static std::vector<float> V;
+static float edge_size = 0.02;
+
+static glm::vec3 meta_balls[6] = {};
+static glm::vec3 meta_balls_dirs[6] = {};
 
 void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
-    for (int i = -10; i <= 10; i++) {
-        for (int j = -10; j <= 10; j++) {
-            for (int k = -10; k <= 10; k++) {
-                V.push_back(i * 0.1);
-                V.push_back(j * 0.1);
-                V.push_back(k * 0.1);
+    for (int i = -50; i <= 50; i++) {
+        for (int j = -50; j <= 50; j++) {
+            for (int k = -50; k <= 50; k++) {
+                V.push_back(i * edge_size);
+                V.push_back(j * edge_size);
+                V.push_back(k * edge_size);
             }
         }
     }
@@ -47,6 +56,28 @@ void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+static GLuint init_skybox_vertex_buffer(float *v_data, int v_size, int *i_data, int i_size) {
+    GLuint vao, vbo, ebo;
+
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
+
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, v_size * sizeof(float), v_data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, i_size * sizeof(int), i_data, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    return vao;
 }
 
 int main(int, char **) {
@@ -68,9 +99,24 @@ int main(int, char **) {
     GLuint vbo, vao, ebo, tex;
     init_buffers(vbo, vao, ebo, tex);
 
-    shader_t shader("vertex.shader",
-                    "fragment.shader",
-                    "geometry.shader");
+    shader_t shader("assets/vertex.shader",
+                    "assets/fragment.shader",
+                    "assets/geometry.shader");
+
+    GLuint skybox_vao = init_skybox_vertex_buffer(cubeV, cubeVSize, cubeF, cubeFSize);
+    shader_t skybox_shader("assets/skybox_vertex.shader",
+                           "assets/skybox_fragment.shader",
+                           "");
+
+    GLuint skybox_texture = load_cube_texture({
+        "assets/right.png",
+        "assets/left.png",
+        "assets/up.png",
+        "assets/down.png",
+        "assets/front.png",
+        "assets/back.png"
+    });
+
 
     // Setup GUI context
     IMGUI_CHECKVERSION();
@@ -80,48 +126,108 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui::StyleColorsDark();
 
+    glm::vec3 forward = {1, 0, 0};
+    glm::vec3 up = {0, 1, 0};
+
+    float zoom = 1;
+
+
+    std::random_device rd;
+    std::mt19937 e2(rd());
+    std::uniform_real_distribution<> dist(0, 10);
+
+    for (int i = 0; i < 6; i++) {
+        meta_balls_dirs[i] = glm::rotate(glm::vec3(1, 0, 0), (float) dist(e2), glm::vec3(0, 1, 0));
+        meta_balls_dirs[i] = glm::rotate(meta_balls_dirs[i], (float) dist(e2), glm::vec3(0, 0, 1));
+    }
+
+    int n_balls = 0;
     while (!glfwWindowShouldClose(window)) {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
+        float ratio = (float) display_w / (float) display_h;
         glViewport(0, 0, display_w, display_h);
+
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
         ImGui::Begin("Settings");
+        ImGui::SliderInt("Balls", &n_balls, 1, 6);
         ImGui::End();
 
-        glClearColor(0.30f, 0.55f, 0.60f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glClearColor(0.30f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        if (!ImGui::IsAnyWindowFocused()) {
+            auto [dx, dy] = ImGui::GetMouseDragDelta();
+            ImGui::ResetMouseDragDelta();
+
+            float ax = dx / (float) display_w;
+            float ay = dy / (float) display_h;
+
+            forward = glm::rotate(forward, ax, up);
+            glm::vec3 right = glm::cross(forward, up);
+            forward = glm::rotate(forward, ay, right);
+            up = glm::rotate(up, ay, right);
+
+            float wheel = ImGui::GetIO().MouseWheel;
+            if (abs(wheel) > 0.1) {
+                wheel = wheel > 0 ? 1/1.2f : 1.2f;
+                zoom *= wheel;
+            }
+        }
 
         glm::mat4 model = glm::mat4(1);
-        glm::mat4 view = glm::lookAt(
-                glm::vec3(0.7, 0.7, 0.7),
-                glm::vec3(0, 0, 0),
-                glm::vec3(0, 1, 0));
-        glm::mat4 projection = glm::perspective(
-                45.0f, (float) display_w / (float) display_h
-                , 0.05f, 2.0f);
+        glm::mat4 view = glm::lookAt(-forward * zoom, glm::vec3(0, 0, 0), up);
+        glm::mat4 projection = glm::perspective(45.0f, ratio, 0.05f, 20.0f);
+        glm::mat4 mv = view * model;
+        glm::mat4 mvp = projection * mv;
 
-        glm::mat4 mvp = projection * view * model;
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox_texture);
 
-        float * data = glm::value_ptr(mvp);
-        shader.set_uniform("MVP", data);
-        shader.set_uniform("hedge_size", 0.05f);
         shader.use();
+        shader.set_uniform("MVP", glm::value_ptr(mvp));
+        shader.set_uniform("hedge_size", edge_size / 2);
+        shader.set_uniform("u_view_dir", forward.x, forward.y, forward.z);
+        shader.set_uniform("radius", 0.1f);
+        shader.set_uniform("n_metaballs", n_balls);
+        for (int i = 0; i < n_balls; ++i) {
+            std::stringstream ss;
+            ss << "metaball" << i + 1;
+            shader.set_uniform(ss.str(), meta_balls[i].x, meta_balls[i].y, meta_balls[i].z);
+        }
+        shader.set_uniform("u_skybox", 0);
 
-        glPointSize(12);
+        for (int i = 0; i < 6; i++) {
+            meta_balls[i] = 0.3f * ((float) sin(glfwGetTime())) * meta_balls_dirs[i];
+        }
+
         glBindVertexArray(vao);
         glDrawArrays(GL_POINTS, 0, V.size() / 3);
         glBindVertexArray(0);
 
+        glm::mat4 view_skybox = glm::lookAt(-forward, glm::vec3(0, 0, 0), up);
+        auto mvp_skybox = projection * view_skybox;
+
+        skybox_shader.use();
+        skybox_shader.set_uniform("u_skybox", 0);
+        skybox_shader.set_uniform("u_mvp", glm::value_ptr(mvp_skybox));
+
+        glBindVertexArray(skybox_vao);
+        glDrawElements(GL_TRIANGLES, cubeFSize, GL_UNSIGNED_INT, nullptr);
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
-        print_OGL_errors();
         glfwPollEvents();
+        print_OGL_errors();
     }
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -129,5 +235,5 @@ int main(int, char **) {
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
-    return 0; 
+    return 0;
 }

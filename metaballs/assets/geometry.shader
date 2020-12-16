@@ -5,6 +5,21 @@ layout (triangle_strip, max_vertices = 15) out;
 uniform mat4 MVP;
 uniform float hedge_size;
 
+uniform vec3 metaball1;
+uniform vec3 metaball2;
+uniform vec3 metaball3;
+uniform vec3 metaball4;
+uniform vec3 metaball5;
+uniform vec3 metaball6;
+
+uniform int n_metaballs = 2;
+
+uniform float radius;
+
+out v_data_t {
+    vec3 normal;
+} v_data;
+
 // data & algorithm source: http://paulbourke.net/geometry/polygonise/
 int triangle_table[256][16] = {
     {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
@@ -300,12 +315,32 @@ int edge_table[256] = {
     0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x0
 };
 
+float sqr_dist(vec3 position, vec3 center) {
+    float dist = distance(position, center);
+    return dist * dist;
+}
+
 float F(vec3 position) {
-    return length(position) - 0.3;
+    float sum = 0;
+    if (n_metaballs > 0) sum += 1 / sqr_dist(position, metaball1);
+    if (n_metaballs > 1) sum += 1 / sqr_dist(position, metaball2);
+    if (n_metaballs > 2) sum += 1 / sqr_dist(position, metaball3);
+    if (n_metaballs > 3) sum += 1 / sqr_dist(position, metaball4);
+    if (n_metaballs > 4) sum += 1 / sqr_dist(position, metaball5);
+    if (n_metaballs > 5) sum += 1 / sqr_dist(position, metaball6);
+    return radius * radius * sum - 1;
 }
 
 vec3 interpolate(vec3 point1, vec3 point2, float value1, float value2) {
     return point1 + (point2 - point1) * abs(value1) / (abs(value1) + abs(value2));
+}
+
+vec3 get_normal (vec3 position) {
+    return normalize(vec3(
+        F(position + vec3(hedge_size / 4, 0, 0)) - F(position - vec3(hedge_size / 4, 0, 0)),
+        F(position + vec3(0, hedge_size / 4, 0)) - F(position - vec3(0, hedge_size / 4, 0)),
+        F(position + vec3(0, 0, hedge_size / 4)) - F(position - vec3(0, 0, hedge_size / 4))
+    ));
 }
 
 vec3 points[12];
@@ -355,11 +390,14 @@ void produce(vec3 center) {
     if ((edges & 2048) != 0) points[11] = interpolate(cube[3], cube[7], fs[3], fs[7]);
 
     for (int i = 0; i < 16 && triangle_table[index][i] != -1; i += 3) {
-        gl_Position = MVP * vec4(points[triangle_table[index][i    ]], 1);
+        gl_Position = MVP * vec4(points[triangle_table[index][i]], 1);
+        v_data.normal = get_normal(points[triangle_table[index][i]]);
         EmitVertex();
         gl_Position = MVP * vec4(points[triangle_table[index][i + 1]], 1);
+        v_data.normal = get_normal(points[triangle_table[index][i + 1]]);
         EmitVertex();
         gl_Position = MVP * vec4(points[triangle_table[index][i + 2]], 1);
+        v_data.normal = get_normal(points[triangle_table[index][i + 2]]);
         EmitVertex();
         EndPrimitive();
     }

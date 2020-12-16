@@ -24,7 +24,8 @@ shader_t::shader_t(
 ) {
     const auto vertex_code = read_shader_code(vertex_code_fname);
     const auto fragment_code = read_shader_code(fragment_code_fname);
-    const auto geometry_code = read_shader_code(geometry_code_fname);
+    without_geom = geometry_code_fname.empty();
+    const auto geometry_code = without_geom ? "" : read_shader_code(geometry_code_fname);
     compile(vertex_code, fragment_code, geometry_code);
     link();
 }
@@ -46,24 +47,26 @@ void shader_t::compile(
     glShaderSource(fragment_id_, 1, &fcode, nullptr);
     glCompileShader(fragment_id_);
 
-    const char* gcode = geometry_code.c_str();
-    geometry_id_ = glCreateShader(GL_GEOMETRY_SHADER);
-    glShaderSource(geometry_id_, 1, &gcode, nullptr);
-    glCompileShader(geometry_id_);
+    if (!without_geom) {
+        const char *gcode = geometry_code.c_str();
+        geometry_id_ = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geometry_id_, 1, &gcode, nullptr);
+        glCompileShader(geometry_id_);
+    }
 
     check_compile_error();
 }
 
 void shader_t::link() {
     program_id_ = glCreateProgram();
-    glAttachShader(program_id_, geometry_id_);
+    if (!without_geom) glAttachShader(program_id_, geometry_id_);
     glAttachShader(program_id_, vertex_id_);
     glAttachShader(program_id_, fragment_id_);
     glLinkProgram(program_id_);
     check_linking_error();
     glDeleteShader(vertex_id_);
     glDeleteShader(fragment_id_);
-    glDeleteShader(geometry_id_);
+    if (!without_geom) glDeleteShader(geometry_id_);
 }
 
 void shader_t::use() const {
@@ -113,6 +116,13 @@ void shader_t::check_compile_error() const {
         glGetShaderInfoLog(fragment_id_, 1024, nullptr, infoLog);
         std::cerr << "Error compiling Fragment shader_t:\n" << infoLog << std::endl;
     }
+    if (!without_geom) {
+        glGetShaderiv(geometry_id_, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            glGetShaderInfoLog(geometry_id_, 1024, nullptr, infoLog);
+            std::cerr << "Error compiling Geometry shader_t:\n" << infoLog << std::endl;
+        }
+    }
 }
 
 void shader_t::check_linking_error() const {
@@ -126,7 +136,9 @@ void shader_t::check_linking_error() const {
         std::cerr << "Vertex shader errors:\n" << infoLog << std::endl;
         glGetShaderInfoLog(fragment_id_, 1024, nullptr, infoLog);
         std::cerr << "Fragment shader errors:\n" << infoLog << std::endl;
-        glGetShaderInfoLog(geometry_id_, 1024, nullptr, infoLog);
-        std::cerr << "Geometry shader errors:\n" << infoLog << std::endl;
+        if (!without_geom) {
+            glGetShaderInfoLog(geometry_id_, 1024, nullptr, infoLog);
+            std::cerr << "Geometry shader errors:\n" << infoLog << std::endl;
+        }
     }
 }

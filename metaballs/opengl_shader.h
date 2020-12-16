@@ -34,8 +34,10 @@ private:
     );
     void link();
 
-    GLuint vertex_id_{};
-    GLuint fragment_id_{};
-    GLuint geometry_id_{};
-    GLuint program_id_{};
+    GLuint vertex_id_;
+    GLuint fragment_id_;
+    GLuint geometry_id_;
+    GLuint program_id_;
+
+    bool without_geom;
 };
