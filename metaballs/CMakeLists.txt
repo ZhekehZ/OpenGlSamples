@@ -21,13 +21,15 @@ add_executable( metaballs
                 bindings/imgui_impl_opengl3.cpp
                 bindings/imgui_impl_glfw.h
                 bindings/imgui_impl_opengl3.h
-                assets/simple-shader.vs
-                assets/simple-shader.fs )
+        assets/vertex.shader
+        assets/fragment.shader
+        assets/geometry.shader)
 
 add_custom_command(TARGET metaballs
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.vs ${PROJECT_BINARY_DIR}
-    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/simple-shader.fs ${PROJECT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/vertex.shader ${PROJECT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/fragment.shader ${PROJECT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/assets/geometry.shader ${PROJECT_BINARY_DIR}
 )
 
 target_compile_definitions(metaballs PUBLIC IMGUI_IMPL_OPENGL_LOADER_GLEW)

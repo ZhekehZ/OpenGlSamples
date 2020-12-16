@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include "opengl_shader.h"
 
+
 static void glfw_error_callback(int error, const char *description) {
    std::cerr << fmt::format("Glfw Error {}: {}\n", error, description);
 }
@@ -40,9 +41,9 @@ void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
 int main(int, char **) {
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return 1;
-    const char *glsl_version = "#version 330";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    const char *glsl_version = "#version 430";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     GLFWwindow *window = glfwCreateWindow(1200, 800, "MetaBalls", nullptr, nullptr);
     if (!window) return 1;
@@ -56,7 +57,9 @@ int main(int, char **) {
     GLuint vbo, vao, ebo, tex;
     init_buffers(vbo, vao, ebo, tex);
 
-    shader_t shader("simple-shader.vs", "simple-shader.fs", "simple-shader.gs");
+    shader_t shader("vertex.shader",
+                    "fragment.shader",
+                    "geometry.shader");
 
     // Setup GUI context
     IMGUI_CHECKVERSION();
@@ -101,5 +104,5 @@ int main(int, char **) {
     ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
-    return 0;
+    return 0; 
 }

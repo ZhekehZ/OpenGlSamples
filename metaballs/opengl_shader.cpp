@@ -126,5 +126,7 @@ void shader_t::check_linking_error() const {
         std::cerr << "Vertex shader errors:\n" << infoLog << std::endl;
         glGetShaderInfoLog(fragment_id_, 1024, nullptr, infoLog);
         std::cerr << "Fragment shader errors:\n" << infoLog << std::endl;
+        glGetShaderInfoLog(geometry_id_, 1024, nullptr, infoLog);
+        std::cerr << "Geometry shader errors:\n" << infoLog << std::endl;
     }
 }
