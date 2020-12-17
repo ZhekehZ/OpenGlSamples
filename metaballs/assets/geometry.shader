@@ -341,9 +341,13 @@ vec3 get_normal (vec3 position) {
     ));
 }
 
-vec3 points[12];
-
 void produce(vec3 center) {
+    vec3 points[12] = {
+        vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0),
+        vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0),
+        vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0), vec3(0, 0, 0)
+    };
+
     vec3 cube[8] = {
         center + vec3(-hedge_size, -hedge_size, +hedge_size),
         center + vec3(+hedge_size, -hedge_size, +hedge_size),
