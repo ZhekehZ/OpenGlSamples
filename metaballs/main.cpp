@@ -206,7 +206,7 @@ int main(int, char **) {
 
         glm::mat4 model = glm::mat4(1);
         glm::mat4 view = glm::lookAt(-forward * zoom, glm::vec3(0, 0, 0), up);
-        glm::mat4 projection = glm::perspective(45.0f, ratio, 0.05f, 20.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), ratio, 0.05f, 20.0f);
         glm::mat4 mv = view * model;
         glm::mat4 mvp = projection * mv;
 

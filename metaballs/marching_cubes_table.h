@@ -1,8 +1,7 @@
 #pragma once
-#include <GL/GL.h>
 
 // data & algorithm source: http://paulbourke.net/geometry/polygonise/
-inline const GLint triangle_table[256 * 15] = {
+inline const int triangle_table[256 * 15] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     0, 8, 3, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     0, 1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
