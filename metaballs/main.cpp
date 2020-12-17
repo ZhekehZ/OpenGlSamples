@@ -1,30 +1,18 @@
 #include <iostream>
+#include <random>
 #include <sstream>
-#include <chrono>
-#include <fmt/format.h>
 #include <GL/glew.h>
-#include "imgui.h"
-#include "bindings/imgui_impl_glfw.h"
-#include "bindings/imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
-#include "opengl_shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include <random>
+#include "imgui.h"
+#include "bindings/imgui_impl_glfw.h"
+#include "bindings/imgui_impl_opengl3.h"
+#include "opengl_shader.h"
 #include "cube_data.h"
 #include "texture_loader.h"
-
-static void glfw_error_callback(int error, const char *description) {
-   std::cerr << fmt::format("Glfw Error {}: {}\n", error, description);
-}
-
-inline void print_OGL_errors() {
-    GLenum err;
-    while ((err = glGetError()) != GL_NO_ERROR) {
-        std::cerr << gluErrorString(err) << std::endl;
-    }
-}
+#include "error_callbacks.h"
 
 static std::vector<float> V;
 static float edge_size = 0.02;
@@ -82,6 +70,7 @@ static GLuint init_skybox_vertex_buffer(float *v_data, int v_size, int *i_data, 
 
 int main(int, char **) {
     glfwSetErrorCallback(glfw_error_callback);
+
     if (!glfwInit()) return 1;
     const char *glsl_version = "#version 430";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -95,6 +84,9 @@ int main(int, char **) {
         std::cerr << "Failed to initialize OpenGL loader!\n";
         return 1;
     }
+
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(MessageCallback, nullptr);
 
     GLuint vbo, vao, ebo, tex;
     init_buffers(vbo, vao, ebo, tex);
@@ -227,7 +219,6 @@ int main(int, char **) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
-        print_OGL_errors();
     }
 
     ImGui_ImplOpenGL3_Shutdown();
