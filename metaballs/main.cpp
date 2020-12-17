@@ -14,6 +14,7 @@
 #include "cube_data.h"
 #include "texture_loader.h"
 #include "error_callbacks.h"
+#include "marching_cubes_table.h"
 
 static std::vector<float> V;
 static float edge_size = 0.02;
@@ -25,9 +26,9 @@ void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
     for (int i = -50; i <= 50; i++) {
         for (int j = -50; j <= 50; j++) {
             for (int k = -50; k <= 50; k++) {
-                V.push_back(i * edge_size);
-                V.push_back(j * edge_size);
-                V.push_back(k * edge_size);
+                V.push_back(float(i) * edge_size);
+                V.push_back(float(j) * edge_size);
+                V.push_back(float(k) * edge_size);
             }
         }
     }
@@ -47,7 +48,7 @@ void init_buffers(GLuint &vbo, GLuint &vao, GLuint &ebo, GLuint &tex) {
     glBindVertexArray(0);
 }
 
-static GLuint init_skybox_vertex_buffer(float *v_data, int v_size, int *i_data, int i_size) {
+GLuint init_skybox_vertex_buffer(float *v_data, int v_size, int *i_data, int i_size) {
     GLuint vao, vbo, ebo;
 
     glGenVertexArrays(1, &vao);
@@ -67,6 +68,14 @@ static GLuint init_skybox_vertex_buffer(float *v_data, int v_size, int *i_data, 
     glBindVertexArray(0);
 
     return vao;
+}
+
+void load_marching_cubes_data() {
+    GLuint ubo;
+    glGenBuffers(1, &ubo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ubo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(triangle_table), triangle_table, GL_STATIC_DRAW);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, ubo);
 }
 
 int main(int, char **) {
@@ -109,6 +118,7 @@ int main(int, char **) {
         "assets/back.png"
     });
 
+    load_marching_cubes_data();
 
     // Setup GUI context
     IMGUI_CHECKVERSION();
@@ -128,9 +138,9 @@ int main(int, char **) {
     std::mt19937 e2(rd());
     std::uniform_real_distribution<> dist(0, 10);
 
-    for (int i = 0; i < 6; i++) {
-        meta_balls_dirs[i] = glm::rotate(glm::vec3(1, 0, 0), (float) dist(e2), glm::vec3(0, 1, 0));
-        meta_balls_dirs[i] = glm::rotate(meta_balls_dirs[i], (float) dist(e2), glm::vec3(0, 0, 1));
+    for (auto & meta_balls_dir : meta_balls_dirs) {
+        meta_balls_dir = glm::rotate(glm::vec3(1, 0, 0), (float) dist(e2), glm::vec3(0, 1, 0));
+        meta_balls_dir = glm::rotate(meta_balls_dir, (float) dist(e2), glm::vec3(0, 0, 1));
     }
 
     auto frame_start_time = std::chrono::high_resolution_clock::now();
