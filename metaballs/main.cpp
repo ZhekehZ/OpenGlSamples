@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <chrono>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -79,7 +80,6 @@ int main(int, char **) {
     GLFWwindow *window = glfwCreateWindow(1200, 800, "MetaBalls", nullptr, nullptr);
     if (!window) return 1;
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
     if (glewInit() != GLEW_OK) {
         std::cerr << "Failed to initialize OpenGL loader!\n";
         return 1;
@@ -133,8 +133,21 @@ int main(int, char **) {
         meta_balls_dirs[i] = glm::rotate(meta_balls_dirs[i], (float) dist(e2), glm::vec3(0, 0, 1));
     }
 
+    auto frame_start_time = std::chrono::high_resolution_clock::now();
+    auto prev_update = frame_start_time;
+    int frame_delta_time_ms = 0;
+    int display_fps = 0, display_frame_time = 0;
+
     int n_balls = 0;
+    bool vsync = true, curr_vsync = false;
+
     while (!glfwWindowShouldClose(window)) {
+        frame_start_time = std::chrono::high_resolution_clock::now();
+        if (curr_vsync != vsync) {
+            glfwSwapInterval(vsync);
+            curr_vsync = vsync;
+        }
+
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         float ratio = (float) display_w / (float) display_h;
@@ -147,6 +160,14 @@ int main(int, char **) {
 
         ImGui::Begin("Settings");
         ImGui::SliderInt("Balls", &n_balls, 1, 6);
+        if (frame_start_time - prev_update > std::chrono::milliseconds(500)) {
+            display_fps = 1000 / (frame_delta_time_ms + 1);
+            display_frame_time = frame_delta_time_ms;
+            prev_update = frame_start_time;
+        }
+        ImGui::LabelText("", "Frame time: %dms", display_frame_time);
+        ImGui::LabelText("", "FPS       : %d", display_fps);
+        ImGui::Checkbox("VSync", &vsync);
         ImGui::End();
 
 
@@ -165,12 +186,12 @@ int main(int, char **) {
             glm::vec3 right = glm::cross(forward, up);
             forward = glm::rotate(forward, ay, right);
             up = glm::rotate(up, ay, right);
+        }
 
-            float wheel = ImGui::GetIO().MouseWheel;
-            if (abs(wheel) > 0.1) {
-                wheel = wheel > 0 ? 1/1.2f : 1.2f;
-                zoom *= wheel;
-            }
+        float wheel = ImGui::GetIO().MouseWheel;
+        if (abs(wheel) > 0.1) {
+            wheel = wheel > 0 ? 1/1.2f : 1.2f;
+            zoom *= wheel;
         }
 
         glm::mat4 model = glm::mat4(1);
@@ -196,7 +217,7 @@ int main(int, char **) {
         shader.set_uniform("u_skybox", 0);
 
         for (int i = 0; i < 6; i++) {
-            meta_balls[i] = 0.3f * ((float) sin(glfwGetTime())) * meta_balls_dirs[i];
+            meta_balls[i] = 0.8f * ((float) sin(glfwGetTime())) * meta_balls_dirs[i];
         }
 
         glBindVertexArray(vao);
@@ -219,6 +240,10 @@ int main(int, char **) {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        std::chrono::duration<double, std::milli>
+                frame_time = std::chrono::high_resolution_clock::now() - frame_start_time;
+        frame_delta_time_ms = static_cast<int>(frame_time.count());
     }
 
     ImGui_ImplOpenGL3_Shutdown();
