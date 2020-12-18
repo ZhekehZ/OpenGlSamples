@@ -5,6 +5,7 @@ env:
   - project_dir=toric_landscape
   - project_dir=cubemap
   - project_dir=fractal
+  - project_dir=metaballs
 
 os: linux
 dist: bionic
