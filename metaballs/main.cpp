@@ -150,6 +150,7 @@ int main(int, char **) {
 
     int n_balls = 0;
     bool vsync = true, curr_vsync = false;
+    float refraction_value = 1.33f;
 
     while (!glfwWindowShouldClose(window)) {
         frame_start_time = std::chrono::high_resolution_clock::now();
@@ -169,6 +170,7 @@ int main(int, char **) {
         ImGui::NewFrame();
 
         ImGui::Begin("Settings");
+        ImGui::SliderFloat("Refraction coeff.", &refraction_value, 1, 5);
         ImGui::SliderInt("Balls", &n_balls, 1, 6);
         if (frame_start_time - prev_update > std::chrono::milliseconds(500)) {
             display_fps = 1000 / (frame_delta_time_ms + 1);
@@ -216,7 +218,8 @@ int main(int, char **) {
         shader.use();
         shader.set_uniform("MVP", glm::value_ptr(mvp));
         shader.set_uniform("hedge_size", edge_size / 2);
-        shader.set_uniform("u_view_dir", forward.x, forward.y, forward.z);
+        shader.set_uniform("u_camera_center", -forward.x * zoom, -forward.y * zoom, -forward.z * zoom);
+        shader.set_uniform("u_refraction_value", refraction_value);
         shader.set_uniform("radius", 0.1f);
         shader.set_uniform("n_metaballs", n_balls);
         for (int i = 0; i < n_balls; ++i) {

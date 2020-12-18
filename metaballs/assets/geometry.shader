@@ -16,7 +16,8 @@ uniform int n_metaballs = 2;
 
 uniform float radius;
 
-out vec3 normal;
+out vec3 v_normal;
+out vec3 v_position;
 
 // data & algorithm source: http://paulbourke.net/geometry/polygonise/
 layout (std430, binding = 2) buffer triangle_table_t {
@@ -81,7 +82,7 @@ vec3 interpolate(vec3 point1, vec3 point2, float value1, float value2) {
 vec3 get_normal (vec3 position) {
     return normalize(vec3(
         F(position + vec3(hedge_size / 4, 0, 0)) - F(position - vec3(hedge_size / 4, 0, 0)),
-        F(position + vec3(0, hedge_size / 4, 0)) - F(position - vec3(0, hedge_size / 4, 0)),
+        F(position - vec3(0, hedge_size / 4, 0)) - F(position + vec3(0, hedge_size / 4, 0)),
         F(position + vec3(0, 0, hedge_size / 4)) - F(position - vec3(0, 0, hedge_size / 4))
     ));
 }
@@ -139,15 +140,18 @@ void produce(vec3 center) {
     index *= 15;
 
     for (int i = 0; i < 16 && triangle_table[index + i] != -1; i += 3) {
-        gl_Position = MVP * vec4(points[triangle_table[index + i]], 1);
-        normal = get_normal(points[triangle_table[index + i]]);
+        vec3 pos;
+
+        #define EMIT                      \
+        v_normal = get_normal(pos);       \
+        v_position = pos;                 \
+        gl_Position = MVP * vec4(pos, 1); \
         EmitVertex();
-        gl_Position = MVP * vec4(points[triangle_table[index + i + 1]], 1);
-        normal = get_normal(points[triangle_table[index + i + 1]]);
-        EmitVertex();
-        gl_Position = MVP * vec4(points[triangle_table[index + i + 2]], 1);
-        normal = get_normal(points[triangle_table[index + i + 2]]);
-        EmitVertex();
+
+
+        pos = points[triangle_table[index + i]];     EMIT;
+        pos = points[triangle_table[index + i + 1]]; EMIT;
+        pos = points[triangle_table[index + i + 2]]; EMIT;
         EndPrimitive();
     }
 }
