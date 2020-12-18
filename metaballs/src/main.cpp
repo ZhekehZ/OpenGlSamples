@@ -100,22 +100,22 @@ int main(int, char **) {
     GLuint vbo, vao, ebo, tex;
     init_buffers(vbo, vao, ebo, tex);
 
-    shader_t shader("assets/vertex.shader",
-                    "assets/fragment.shader",
-                    "assets/geometry.shader");
+    shader_t shader("assets/shaders/metaballs/vertex.shader",
+                    "assets/shaders/metaballs/fragment.shader",
+                    "assets/shaders/metaballs/geometry.shader");
 
     GLuint skybox_vao = init_skybox_vertex_buffer(cubeV, cubeVSize, cubeF, cubeFSize);
-    shader_t skybox_shader("assets/skybox_vertex.shader",
-                           "assets/skybox_fragment.shader",
+    shader_t skybox_shader("assets/shaders/skybox/vertex.shader",
+                           "assets/shaders/skybox/fragment.shader",
                            "");
 
     GLuint skybox_texture = load_cube_texture({
-        "assets/right.png",
-        "assets/left.png",
-        "assets/up.png",
-        "assets/down.png",
-        "assets/front.png",
-        "assets/back.png"
+        "assets/skybox/right.png",
+        "assets/skybox/left.png",
+        "assets/skybox/up.png",
+        "assets/skybox/down.png",
+        "assets/skybox/front.png",
+        "assets/skybox/back.png"
     });
 
     load_marching_cubes_data();
