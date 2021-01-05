@@ -9,6 +9,7 @@ set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 find_package(imgui CONFIG)
 find_package(glfw CONFIG)
+find_package(glfw3 CONFIG)
 find_package(glew CONFIG)
 find_package(fmt CONFIG)
 find_package(glm CONFIG)

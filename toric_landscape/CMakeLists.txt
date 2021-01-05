@@ -12,6 +12,7 @@ endif ()
 # CONFIG option is important so that CMake doesnt search for modules into the default modules directory
 find_package(glfw CONFIG)
 find_package(glew CONFIG)
+find_package(glfw3 CONFIG)
 find_package(fmt CONFIG)
 find_package(glm CONFIG)
 find_package(stb CONFIG)
