@@ -9,19 +9,11 @@ env:
 
 os: linux
 dist: bionic
-compiler: gcc
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - g++-10
+compiler: g++
 before_install:
   - echo Module $project_dir
-  - export CXX=g++-10
   - pip install conan
   - export GENERATOR="Unix Makefile"
-
   
 script:
   - cd $project_dir && ls && ./build.sh
